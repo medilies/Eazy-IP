@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IP utility</title>
+</head>
+<body>
+    <main>
+        <div id="JS-print"></div>
+
+        <h1>Classful</h1>
+        <p>
+            Collect the network's info of the given unicast address
+        </p>
+        <form id="js-classful-addressing">
+            <label>Classful IP address</label>
+            <input type="text" id="js-classful-address" placeholder="example 192.168.1.2">
+            <br>
+            <button type="submit">Get info</button>
+        </form>
+
+        <h1>Classless</h1>
+        <p>
+            Collect the subnets' info of the given unicast address
+        </p>
+        <form id="js-classless-addressing">
+            <label>classless IP address</label>
+            <input type="text" id="js-classfless-address" placeholder="example 192.168.1.34" value="192.168.1.34">
+            <br>
+            <label>Mask or CIDR prefix</label>
+            <input type="text" id="js-classfless-mask-or-prefix" placeholder="example 255.255.255.240 or /28" value="/9">
+            <br>
+            <button type="submit">Get info</button>
+        </form>
+
+        <h1>Subnet an available network</h1>
+        <h1>Summerize subnets (supernetting)</h1>
+
+    </main>
+    <script src="index.js"></script>
+
+    <script>
+        
+        const classfulForm = document.querySelector("#js-classful-addressing");
+        const classfulIp = document.querySelector("#js-classful-address");
+        classfulForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            let ip = classfulIp.value.toString();
+            ip = arrayIp(ip);
+            if(ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
+            console.table(classfulIpInfo(ip));
+        })
+
+        let classlessForm = document.querySelector("#js-classless-addressing");
+        let classlessIp = document.querySelector("#js-classfless-address");
+        let classlessPrefixOrMask = document.querySelector("#js-classfless-mask-or-prefix");
+        classlessForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            let ip = classlessIp.value.toString();
+            let input = classlessPrefixOrMask.value.toString();
+
+            const {mask, prefix, intrestingOctetIndex} = extractPrefixAndMask(input);
+            console.log(mask);
+            console.log(prefix);
+            console.log(intrestingOctetIndex);
+
+            // find block size
+            // start iterating with block size from subnet zero
+
+        })
+
+        // adapt to promesses
+        function classfulIpInfo(ip){
+
+            const ipClass = getClassOfIp(ip[0]);
+            let networkOctets;
+            let availabeHosts;
+            let subnetMask;
+
+            switch (ipClass) {
+                case "class A":
+                    networkOctets=1;
+                    availabeHosts=16777214;
+                    subnetMask= "255.0.0.0";
+                    break;
+                case "class B":
+                    networkOctets=2;
+                    availabeHosts=65534;
+                    subnetMask= "255.255.0.0";
+                    break;
+                case "class C":
+                    networkOctets=3;
+                    availabeHosts=254;
+                    subnetMask= "255.255.255.0";
+                    break;
+                default:
+                    console.error("u cant work with this class");
+                    break;
+            }
+
+            const networkIp = ip.map((element, i)=>{
+                if(i>=networkOctets) return "0";
+                else return element;
+            });
+
+            const broadcastIp = ip.map((element, i)=>{
+                if(i>=networkOctets) return "255";
+                else return element;
+            });
+
+            const firstHost = networkIp.map((element, i)=>{
+                if(i===3) return "1";
+                else return element;
+            });
+            
+            const lastHost = broadcastIp.map((element, i)=>{
+                if(i===3) return "254";
+                if(i>=networkOctets) return "255";
+                else return element;
+            });
+
+            return {
+                networkIp: networkIp.join("."),
+                firstHost: firstHost.join("."),
+                lastHost: lastHost.join("."),
+                broadcastIp: broadcastIp.join("."),
+                subnetMask: subnetMask,
+                ipClass: ipClass,
+                availabeHosts: availabeHosts,
+            };
+        }
+
+        function classlessIpInfo(ip){
+            // get intresting byte
+            // mode the cidr
+        }
+
+        function extractPrefixAndMask(input){
+            let mask = [];
+            let prefix;
+            let intrestingOctetIndex;
+            // Mask
+            if(input.length >5){
+                // needs a new vality test function => all 1 bits on left
+                if(ipv4RangeValidity(input) !== true) console.error("invalid values in mask");
+                mask = arrayIp(input);
+
+                intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
+
+                prefix = maskToPrefix(mask, intrestingOctetIndex);
+            }
+            // Prefix
+            if(input.length < 5){
+                if(input.includes("/")) input = input.substr(1);
+                prefix = parseInt(input);
+                if(prefix <=0 || prefix>=33) console.error("impossible prefix");
+
+                intrestingOctetIndex = parseInt((prefix -1) / 8);
+
+                mask = prefixToMask(prefix, intrestingOctetIndex);
+            }
+            // console.log(mask, prefix);
+
+            return {mask, prefix, intrestingOctetIndex};
+        }
+
+        /**
+         * intresting octet gives index of the subneted octet [0|1|2|3]
+        */
+        function maskToPrefix(mask, intrestingOctetIndex){
+            let intrestingOctetInBinary = decimalToBinary(mask[intrestingOctetIndex]);
+            let bitsSetToOneINintrestingOctet =intrestingOctetInBinary.indexOf("0");
+            // correct indexOf() return if not found
+            if(bitsSetToOneINintrestingOctet === -1) bitsSetToOneINintrestingOctet=0;
+            // console.log(intrestingOctetIndex, intrestingOctetInBinary, bitsSetToOneINintrestingOctet);
+            return 8*intrestingOctetIndex + bitsSetToOneINintrestingOctet;
+        }
+
+        function prefixToMask(prefix, intrestingOctetIndex){
+            let mask;
+            
+            // preset the mask
+            switch (intrestingOctetIndex) {
+                case 0:
+                    mask=["0","0","0","0"];
+                    break;
+                case 1:
+                    mask=["255","0","0","0"];
+                    break;
+                case 2:
+                    mask=["255","255","0","0"];
+                    break;
+                case 3:
+                    mask=["255","255","255","0"];
+                    break;
+                default:
+                    console.error('weird');
+                    break;
+            }
+            
+            let intrestingOctetInBinary = "";
+            if (prefix%8===0) {
+                intrestingOctetInBinary = "11111111";
+            } else {
+                for (let i = 0; i < 8; i++) {
+                    if(i < prefix%8) intrestingOctetInBinary+="1";
+                    else intrestingOctetInBinary+="0";
+                }
+            }
+            // console.log(intrestingOctetInBinary);
+
+            // last modification on the preset mask
+            mask[intrestingOctetIndex]=binaryToDecimal(intrestingOctetInBinary).toString();
+
+            return mask;
+        }
+        
+        /**
+         * First octet from left that isnt set to 255 is the intresting octet
+        */
+        function getIntrestingOctetIndexFromMask(mask){
+            for (let i = 0; i <=3; i++) {
+                if(mask[i]!=="255") return i;
+            }
+            console.error("didnt find intresting octet");
+        }
+
+        /**
+         * takes "nb.nb.nb.nb" or "nb.nb.nb.nb/nb" and returns ["nb","nb","nb","nb"]
+        */
+        function arrayIp (ip){
+            // check if formated as ["nb","nb","nb","nb"]
+            if(Array.isArray(ip) && ip.length === 4) console.warn("needless use for this function");
+            // if not array then string
+            // check if formated as "nb.nb.nb.nb/nb" then format it as "nb.nb.nb.nb"
+            if(ip.includes("/")) ip = ip.substr(0, ip.indexOf("/"));
+            // return "nb.nb.nb.nb" as ["nb","nb","nb","nb"]
+            return ip.split(".");
+        }
+
+        /**
+         * uses octetRangeIsValid() on every octet
+        */
+        function ipv4RangeValidity(ip){
+            let report = '';
+            if(!Array.isArray(ip)) ip = arrayIp(ip);
+            if(ip.length!==4) report+="IP do not have 4 octets/";
+
+            // replcae this with html text
+            report+=`${octetRangeIsValid(ip[0])?'': "/invalid A octet"
+                }${octetRangeIsValid(ip[1])?'': "/invalid B octet"
+                }${octetRangeIsValid(ip[2])?'': "/invalid C octet"
+                }${octetRangeIsValid(ip[3])?'': "/invalid D octet"}`;
+            
+            if (report === '') return true;
+            return report;
+        }
+
+        /**
+         * Integer or string within [0-255]
+        */
+        function octetRangeIsValid(octet){
+            // console.log(octet);
+            octet = parseInt(octet);
+            if(octet >= 0 && octet <= 255) return true;
+            return false;
+        }
+
+        function warnReservedNetwork(){
+            // ...
+        }
+
+        /**
+         * octet can be int or string between 0 & 255
+         * Returns a binary octet in string format
+        */
+        function decimalToBinary(octet){
+            octet = parseInt(octet);
+            if(!octetRangeIsValid(octet)) console.error("invalide octet");
+
+            let bin = "";
+            let rest;
+            for (let i = 0; i < 8; i++) {
+                rest = octet%2;
+                octet = parseInt(octet/2);
+                bin = rest + bin;
+            }
+            return bin;
+        }
+
+        function binaryToDecimal(bin){
+            let decimal = 0;
+            let power = 7;
+            for (let i = 0; i < 8; i++) {
+                if(bin[i]==="1") decimal += Math.pow(2, power);
+                power--;
+            }
+            return decimal;
+        }
+
+        /**
+         * firstOctet can be int or string between 0 & 255
+        */
+        function getClassOfIp(firstOctet){
+            // console.log(firstOctet);
+            firstOctet = parseInt(firstOctet);
+            if(!octetRangeIsValid(firstOctet)) console.error("invalide first octet");
+
+            if(firstOctet>=0 && firstOctet<=127) return "class A";
+            if(firstOctet>=128 && firstOctet<=191) return "class B";
+            if(firstOctet>=192 && firstOctet<=223) return "class C";
+            if(firstOctet>=224 && firstOctet<=239) return "class D";
+            if(firstOctet>=240 && firstOctet<=255) return "class E";
+        }
+
+    </script>
+
+</body>
+</html>
