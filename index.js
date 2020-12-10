@@ -29,6 +29,9 @@ const classlessPrefixOrMask = document.querySelector(
     "#js-classfless-mask-or-prefix"
 );
 const classlessInfoDiv = document.querySelector("#js-classless-info");
+const classlessNeighborsInfoDiv = document.querySelector(
+    "#js-classless-neighbors-info"
+);
 
 // Highligh the IP in the its subnet map
 // Highlight the subnet next its neighbors
@@ -43,7 +46,7 @@ classfulForm.addEventListener("submit", (e) => {
     const networkInfo = classfulIpInfo(ip);
     // console.table(networkInfo);
 
-    const subnetTable = subnetTableGenerator(networkInfo);
+    const subnetTable = subnetTableGen(networkInfo);
     classfulInfoDiv.innerHTML = subnetTable;
 });
 
@@ -59,17 +62,29 @@ classlessForm.addEventListener("submit", (e) => {
 
     const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
 
-    const possibleNeightboringSubnets = neightboringSubnets(
+    const possibleNeighboringSubnets = neightboringSubnets(
         mainSubnetInfo.subnetIp,
         mask,
         intrestingOctetIndex
     );
 
     // console.table(mainSubnetInfo);
-    console.table(possibleNeightboringSubnets);
+    // console.table(possibleNeighboringSubnets);
 
-    const subnetTable = subnetTableGenerator(mainSubnetInfo);
+    const subnetTable = subnetTableGen(mainSubnetInfo);
     classlessInfoDiv.innerHTML = subnetTable;
+
+    classlessNeighborsInfoDiv.innerHTML = "";
+
+    if (possibleNeighboringSubnets !== "not a subneted network") {
+        classlessNeighborsInfoDiv.innerHTML = `Possible subnets on ${
+            possibleNeighboringSubnets[0].subnetIp
+        }/${prefix - 1}`;
+        const neighboringSubnetsTable = neighboringSubnetsTableGen(
+            possibleNeighboringSubnets
+        );
+        classlessNeighborsInfoDiv.innerHTML += neighboringSubnetsTable;
+    }
 });
 
 // adapt to promesses
@@ -409,7 +424,7 @@ function getClassOfIp(firstOctet) {
  * need to include prefixe
  * @param {*} info
  */
-function subnetTableGenerator(info) {
+function subnetTableGen(info) {
     return `
     <table border="1">
         <tr>
@@ -435,15 +450,34 @@ function subnetTableGenerator(info) {
         ${
             info.ipClass == undefined
                 ? ""
-                : `<tr>
-                <td>Class</td>
-                <td>${info.ipClass}</td>
-            </tr>`
+                : `<tr><td>Class</td><td>${info.ipClass}</td></tr>`
         }
-
         <tr>
             <td>Number of Availabe hosts</td>
             <td>${info.availabeHosts}</td>
         </tr>
     </table>`;
+}
+
+function neighboringSubnetsTableGen(neighboringInfo) {
+    let table = `<table border='1'>
+    <tr>
+        <td></td>
+        <td>Subnet address</td>
+        <td>First host</td>
+        <td>Last host</td>
+        <td>Broadcast address</td>
+    </tr>`;
+    neighboringInfo.forEach((subnet, i) => {
+        table += `
+        <tr>
+            <td>${i + 1}</td>
+            <td>${subnet.subnetIp}</td>
+            <td>${subnet.firstHost}</td>
+            <td>${subnet.lastHost}</td>
+            <td>${subnet.subnetBroadcastIp}</td>
+        </tr>`;
+    });
+    table += "</table>";
+    return table;
 }
