@@ -41,6 +41,8 @@
     <script src="index.js"></script>
 
     <script>
+
+
         
         const classfulForm = document.querySelector("#js-classful-addressing");
         const classfulIp = document.querySelector("#js-classful-address");
@@ -80,17 +82,17 @@
 
             switch (ipClass) {
                 case "class A":
-                    networkOctets=1;
+                    networkOctets=0;
                     availabeHosts=16777214;
                     subnetMask= "255.0.0.0";
                     break;
                 case "class B":
-                    networkOctets=2;
+                    networkOctets=1;
                     availabeHosts=65534;
                     subnetMask= "255.255.0.0";
                     break;
                 case "class C":
-                    networkOctets=3;
+                    networkOctets=2;
                     availabeHosts=254;
                     subnetMask= "255.255.255.0";
                     break;
@@ -100,12 +102,12 @@
             }
 
             const networkIp = ip.map((element, i)=>{
-                if(i>=networkOctets) return "0";
+                if(i>networkOctets) return "0";
                 else return element;
             });
 
             const broadcastIp = ip.map((element, i)=>{
-                if(i>=networkOctets) return "255";
+                if(i>networkOctets) return "255";
                 else return element;
             });
 
@@ -116,7 +118,6 @@
             
             const lastHost = broadcastIp.map((element, i)=>{
                 if(i===3) return "254";
-                if(i>=networkOctets) return "255";
                 else return element;
             });
 
