@@ -79,7 +79,7 @@ classlessForm.addEventListener("submit", (e) => {
     if (possibleNeighboringSubnets !== "not a subneted network") {
         classlessNeighborsInfoDiv.innerHTML = `Possible subnets on ${
             possibleNeighboringSubnets[0].subnetIp
-        }/${prefix - 1}`;
+        }/${8 * parseInt(prefix / 8)}`;
         const neighboringSubnetsTable = neighboringSubnetsTableGen(
             possibleNeighboringSubnets
         );
