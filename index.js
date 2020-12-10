@@ -21,20 +21,30 @@ const maskDecimals = [128, 192, 224, 240, 248, 252, 254, 255];
 // forms elements
 const classfulForm = document.querySelector("#js-classful-addressing");
 const classfulIp = document.querySelector("#js-classful-address");
+const classfulInfoDiv = document.querySelector("#js-classful-info");
 
 const classlessForm = document.querySelector("#js-classless-addressing");
 const classlessIp = document.querySelector("#js-classfless-address");
 const classlessPrefixOrMask = document.querySelector(
     "#js-classfless-mask-or-prefix"
 );
+const classlessInfoDiv = document.querySelector("#js-classless-info");
+
+// Highligh the IP in the its subnet map
+// Highlight the subnet next its neighbors
+// warn the user if he gave a network or broadcast address that is cant be used for host
 
 classfulForm.addEventListener("submit", (e) => {
     e.preventDefault();
     let ip = classfulIp.value.toString();
     ip = arrayIp(ip);
     if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
-    const info = classfulIpInfo(ip);
-    console.table(info);
+
+    const networkInfo = classfulIpInfo(ip);
+    // console.table(networkInfo);
+
+    const subnetTable = subnetTableGenerator(networkInfo);
+    classfulInfoDiv.innerHTML = subnetTable;
 });
 
 classlessForm.addEventListener("submit", (e) => {
@@ -48,7 +58,6 @@ classlessForm.addEventListener("submit", (e) => {
     const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
 
     const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
-    console.table(mainSubnetInfo);
 
     const possibleNeightboringSubnets = neightboringSubnets(
         mainSubnetInfo.subnetIp,
@@ -56,7 +65,11 @@ classlessForm.addEventListener("submit", (e) => {
         intrestingOctetIndex
     );
 
+    // console.table(mainSubnetInfo);
     console.table(possibleNeightboringSubnets);
+
+    const subnetTable = subnetTableGenerator(mainSubnetInfo);
+    classlessInfoDiv.innerHTML = subnetTable;
 });
 
 // adapt to promesses
@@ -175,6 +188,12 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
     }
 }
 
+/**
+ * Assumes FIXED Length Subneting
+ * @param {*} mainSubnet
+ * @param {*} mask
+ * @param {*} intrestingOctetIndex
+ */
 function neightboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
     if (mask[intrestingOctetIndex] == 255) return "not a subneted network";
 
@@ -384,4 +403,47 @@ function getClassOfIp(firstOctet) {
     if (firstOctet >= 192 && firstOctet <= 223) return "class C";
     if (firstOctet >= 224 && firstOctet <= 239) return "class D";
     if (firstOctet >= 240 && firstOctet <= 255) return "class E";
+}
+
+/**
+ * need to include prefixe
+ * @param {*} info
+ */
+function subnetTableGenerator(info) {
+    return `
+    <table border="1">
+        <tr>
+            <td>${info.ipClass == undefined ? "Subnet" : "Network"} address</td>
+            <td>${info.subnetIp}</td>
+            </tr>
+        <tr>
+            <td>First host</td>
+            <td>${info.firstHost}</td>
+        </tr>
+        <tr>
+            <td>Last host</td>
+            <td>${info.lastHost}</td>
+        </tr>
+        <tr>
+            <td>Broadcast address</td>
+            <td>${info.subnetBroadcastIp}</td>
+        </tr>
+        <tr>
+            <td>Subnetmask</td>
+            <td>${info.subnetMask}</td>
+        </tr>
+        ${
+            info.ipClass == undefined
+                ? ""
+                : `<tr>
+                <td>Class</td>
+                <td>${info.ipClass}</td>
+            </tr>`
+        }
+
+        <tr>
+            <td>Number of Availabe hosts</td>
+            <td>${info.availabeHosts}</td>
+        </tr>
+    </table>`;
 }
