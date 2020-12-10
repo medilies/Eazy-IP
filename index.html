@@ -42,6 +42,7 @@
 
     <script>
 
+        // Mapping arrays
         const allPrefixes = [
             [1,2,3,4,5,6,7,8],
             [9,10,11,12,13,14,15,16],
@@ -152,20 +153,15 @@
             if(input.length >5){
                 // needs a new vality test function => all 1 bits on left
                 if(ipv4RangeValidity(input) !== true) console.error("invalid values in mask");
+
                 mask = arrayIp(input);
-
                 intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
-
                 prefix = maskToPrefix(mask, intrestingOctetIndex);
             }
             // Prefix
             if(input.length < 5){
-                if(input.includes("/")) input = input.substr(1);
-                prefix = parseInt(input);
-                if(prefix <=0 || prefix>=33) console.error("impossible prefix");
-
+                prefix = decimalPrefix(input);
                 intrestingOctetIndex = parseInt((prefix -1) / 8);
-
                 mask = prefixToMask(prefix, intrestingOctetIndex);
             }
             // console.log(mask, prefix);
@@ -263,6 +259,16 @@
             octet = parseInt(octet);
             if(octet >= 0 && octet <= 255) return true;
             return false;
+        }
+
+        function decimalPrefix(prefix){
+            // need more precises way to check IsInt?
+            if(!isNaN(prefix) && prefix>=1 && prefix<=32) return parseInt(prefix);
+            // string "/nb" to "nb"
+            if(prefix.includes("/")) prefix = prefix.substr(1);
+            prefix = parseInt(prefix);
+            if(prefix <=0 || prefix>=33) throw("impossible prefix");
+            else return prefix;
         }
 
         function warnReservedNetwork(){
