@@ -426,7 +426,7 @@ function getClassOfIp(firstOctet) {
  */
 function subnetTableGen(info) {
     return `
-    <table border="1">
+    <table>
         <tr>
             <td>${info.ipClass == undefined ? "Subnet" : "Network"} address</td>
             <td>${info.subnetIp}</td>
@@ -460,7 +460,7 @@ function subnetTableGen(info) {
 }
 
 function neighboringSubnetsTableGen(neighboringInfo) {
-    let table = `<table border='1'>
+    let table = `<table>
     <tr>
         <td></td>
         <td>Subnet address</td>
