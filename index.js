@@ -1,6 +1,9 @@
 /**
  * ADD:
  * - Warn user when he enters subnet or broadcast @ as unicast address
+ * - Show the given IP inside the subnet
+ *
+ * NOTE:
  * - variable named blocksize aren't so fidel to the name!!
  * - Can add an array to map number of available hosts using prefix as index
  */
@@ -44,11 +47,16 @@ classlessForm.addEventListener("submit", (e) => {
 
     const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
 
-    const info = classlessIpInfo(ip, mask, intrestingOctetIndex);
-    console.table(info);
+    const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
+    console.table(mainSubnetInfo);
 
-    // add neightbouring subnets
-    // iterate other subnets (0+=blocksize<256)
+    const possibleNeightboringSubnets = neightboringSubnets(
+        mainSubnetInfo.subnetIp,
+        mask,
+        intrestingOctetIndex
+    );
+
+    console.table(possibleNeightboringSubnets);
 });
 
 // adapt to promesses
@@ -79,7 +87,7 @@ function classfulIpInfo(ip) {
             break;
     }
 
-    const subnetMap = subnetmapping(ip, arrayIp(mask), networkOctets);
+    const subnetMap = subnetMapping(ip, arrayIp(mask), networkOctets);
 
     return {
         subnetIp: subnetMap[0].join("."),
@@ -93,7 +101,7 @@ function classfulIpInfo(ip) {
 }
 
 function classlessIpInfo(ip, mask, intrestingOctetIndex) {
-    const subnetMap = subnetmapping(ip, mask, intrestingOctetIndex);
+    const subnetMap = subnetMapping(ip, mask, intrestingOctetIndex);
 
     return {
         subnetIp: subnetMap[0].join("."),
@@ -111,9 +119,8 @@ function classlessIpInfo(ip, mask, intrestingOctetIndex) {
  * @param {*} mask
  * @param {*} intrestingOctetIndex
  */
-function subnetmapping(ip, mask, intrestingOctetIndex) {
-    // 8, 16, 24, 32 prefixes give size of 1
-    const blockSize = 256 - mask[intrestingOctetIndex];
+function subnetMapping(ip, mask, intrestingOctetIndex) {
+    const blockSize = getBlockSize(mask, intrestingOctetIndex);
 
     const subnetIndex = parseInt(ip[intrestingOctetIndex] / blockSize);
     // console.log(intrestingOctetIndex, blockSize, subnetIndex);
@@ -150,7 +157,6 @@ function subnetmapping(ip, mask, intrestingOctetIndex) {
 
 /**
  * The math in this function can be replaced by a mapping array All possibilities indexed with prefix
- * NOTE! prefix of 8,16,24 gives block size of 1
  * @param {*} intrestingOctetIndex
  * @param {*} blockSize
  */
@@ -167,6 +173,29 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
         default:
             throw "index of octet cant be larger then 3";
     }
+}
+
+function neightboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
+    if (mask[intrestingOctetIndex] == 255) return "not a subneted network";
+
+    const blockSize = getBlockSize(mask, intrestingOctetIndex);
+    const currentSubnet = arrayIp(mainSubnet);
+    const subnets = [];
+    for (let i = 0; i < 256; i += blockSize) {
+        currentSubnet[intrestingOctetIndex] = i.toString();
+        currentSubnetMap = subnetMapping(
+            currentSubnet,
+            mask,
+            intrestingOctetIndex
+        );
+        subnets.push({
+            subnetIp: currentSubnetMap[0].join("."),
+            firstHost: currentSubnetMap[1].join("."),
+            lastHost: currentSubnetMap[2].join("."),
+            subnetBroadcastIp: currentSubnetMap[3].join("."),
+        });
+    }
+    return subnets;
 }
 
 function extractPrefixAndMask(input) {
@@ -245,6 +274,16 @@ function getIntrestingOctetIndexFromMask(mask) {
         else if (mask[i] === "255" && i === 3) return 3;
     }
     console.error("didnt find intresting octet");
+}
+
+/**
+ * 8, 16, 24, 32 prefixes' masks give blocksize of 1 bcz 256 - 255 = 1
+ * this type of behaviour is being exploited!
+ * @param {*} mask array
+ * @param {*} intrestingOctetIndex 0-3
+ */
+function getBlockSize(mask, intrestingOctetIndex) {
+    return 256 - mask[intrestingOctetIndex];
 }
 
 /**
