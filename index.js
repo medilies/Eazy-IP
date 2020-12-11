@@ -29,8 +29,11 @@ const classlessPrefixOrMask = document.querySelector(
     "#js-classfless-mask-or-prefix"
 );
 const classlessInfoDiv = document.querySelector("#js-classless-info");
-const classlessNeighborsInfoDiv = document.querySelector(
+const classlessClassLevelNeighborsInfoDiv = document.querySelector(
     "#js-classless-neighbors-info"
+);
+const classlessUpperPrefixesDiv = document.querySelector(
+    "#js-classless-upper-prefixes-neighbors"
 );
 
 // Highligh the IP in the its subnet map
@@ -59,33 +62,102 @@ classlessForm.addEventListener("submit", (e) => {
     if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
 
     const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
+    // cut the crap at 31 and 32 prefixes
+    if (prefix == 32 || prefix == 31) {
+        console.warn("This is an exceptional subnet");
+        return;
+    }
 
     const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
 
-    const possibleNeighboringSubnets = neightboringSubnets(
+    const classNeighboringSubnetsList = getClassNeighboringSubnets(
         mainSubnetInfo.subnetIp,
         mask,
         intrestingOctetIndex
     );
 
     // console.table(mainSubnetInfo);
-    // console.table(possibleNeighboringSubnets);
+    // console.table(classNeighboringSubnetsList);
 
     const subnetTable = subnetTableGen(mainSubnetInfo);
     classlessInfoDiv.innerHTML = subnetTable;
 
-    classlessNeighborsInfoDiv.innerHTML = "";
+    classlessClassLevelNeighborsInfoDiv.innerHTML = "";
 
-    if (possibleNeighboringSubnets !== "not a subneted network") {
-        classlessNeighborsInfoDiv.innerHTML = `Possible subnets on ${
-            possibleNeighboringSubnets[0].subnetIp
+    if (classNeighboringSubnetsList !== "Main subnet is a class level subnet") {
+        classlessClassLevelNeighborsInfoDiv.innerHTML = `All the Possible /${prefix} subnets on ${
+            classNeighboringSubnetsList[0].subnetIp
         }/${8 * parseInt(prefix / 8)}`;
-        const neighboringSubnetsTable = neighboringSubnetsTableGen(
-            possibleNeighboringSubnets
+
+        const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
+            classNeighboringSubnetsList
         );
-        classlessNeighborsInfoDiv.innerHTML += neighboringSubnetsTable;
+        classlessClassLevelNeighborsInfoDiv.innerHTML += classNeighboringSubnetsTable;
     }
+
+    // avoid 8,16,24
+    const stopPrefix = parseInt(prefix / 8) * 8;
+    const prefixedNeighbors = [];
+    for (let i = prefix - 1; i > stopPrefix; i--) {
+        const currentPrefixNeighbors = upperSubnetNeighbors(
+            mainSubnetInfo.subnetIp,
+            mask,
+            intrestingOctetIndex,
+            i
+        );
+        prefixedNeighbors.push(currentPrefixNeighbors);
+    }
+    console.log(prefixedNeighbors);
+
+    classlessUpperPrefixesDiv.innerHTML = upperPrefixNeighboringSubnetsTableGen(
+        prefixedNeighbors
+    );
 });
+
+/**
+ * Doesn't function on 8,16,24 prefixes due inexpected behviour detecting their intrestingOctet
+ * @param {*} mainSubnet
+ * @param {*} mainSubnetMask
+ * @param {*} intrestingOctetIndex
+ * @param {*} targetPrefix
+ */
+function upperSubnetNeighbors(
+    mainSubnet,
+    mainSubnetMask,
+    intrestingOctetIndex,
+    targetPrefix
+) {
+    if (targetPrefix == 8 || targetPrefix == 16 || targetPrefix == 24)
+        return "This doesn't a class level subnet's subnets";
+
+    if (mainSubnetMask[intrestingOctetIndex] == "255")
+        return "This function doesn't locate Class level subnets neighbors";
+
+    mainSubnet = arrayIp(mainSubnet);
+    const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
+    const targetBlockSize = getBlockSize(targetMask, intrestingOctetIndex);
+    const parentSubnetIndex = parseInt(
+        mainSubnet[intrestingOctetIndex] / targetBlockSize
+    );
+
+    const iterativeBlockSize = getBlockSize(
+        mainSubnetMask,
+        intrestingOctetIndex
+    );
+
+    let theOctet = targetBlockSize * parentSubnetIndex;
+    const subnets = [];
+
+    for (let i = 0; i < targetBlockSize; i += iterativeBlockSize) {
+        // from now on mainsubnet looses its meanning. its just an IP array
+        mainSubnet[intrestingOctetIndex] = theOctet.toString();
+        subnets.push(mainSubnet.join("."));
+        theOctet += iterativeBlockSize;
+    }
+
+    // console.log(subnets);
+    return { subnets: subnets, prefix: targetPrefix };
+}
 
 // adapt to promesses
 function classfulIpInfo(ip) {
@@ -209,8 +281,9 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
  * @param {*} mask
  * @param {*} intrestingOctetIndex
  */
-function neightboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
-    if (mask[intrestingOctetIndex] == 255) return "not a subneted network";
+function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
+    if (mask[intrestingOctetIndex] == 255)
+        return "Main subnet is a class level subnet";
 
     const blockSize = getBlockSize(mask, intrestingOctetIndex);
     const currentSubnet = arrayIp(mainSubnet);
@@ -290,7 +363,9 @@ function prefixToMask(prefix, intrestingOctetIndex) {
             break;
     }
 
+    // 8,16,24 prefixes has their intrestingOctetIndex+1
     const mappingIndex = allPrefixes[intrestingOctetIndex].indexOf(prefix);
+    // console.log(mappingIndex, prefix, intrestingOctetIndex);
 
     // last modification on the preset mask
     mask[intrestingOctetIndex] = maskDecimals[mappingIndex].toString();
@@ -459,7 +534,7 @@ function subnetTableGen(info) {
     </table>`;
 }
 
-function neighboringSubnetsTableGen(neighboringInfo) {
+function classNeighboringSubnetsTableGen(neighboringInfo) {
     let table = `<table>
     <tr>
         <td></td>
@@ -479,5 +554,67 @@ function neighboringSubnetsTableGen(neighboringInfo) {
         </tr>`;
     });
     table += "</table>";
+    return table;
+}
+
+function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
+    let table = "<table><tr>";
+    prefixedNeighbors.reverse();
+    const largestSubnetsList = prefixedNeighbors[0].subnets;
+
+    // headers row
+    prefixedNeighbors.forEach((subnetsList) => {
+        table += `<td>${subnetsList.subnets[0]}/${subnetsList.prefix}</td>`;
+    });
+    table += "</tr><tr>";
+
+    // get if cells are aligned or there is an empty span
+    const span = [];
+    prefixedNeighbors.forEach((subnetsList) => {
+        if (subnetsList.subnets[0] === largestSubnetsList[0]) span.push(0);
+        else span.push(largestSubnetsList.indexOf(subnetsList.subnets[0]));
+    });
+
+    // set first row
+    span.forEach((emptyCells, i) => {
+        // console.log(emptyCells);
+        // console.log(prefixedNeighbors[i].subnets[0]);
+
+        // 0 means aligned with smallest prefix
+        if (emptyCells === 0)
+            table += `<td>${prefixedNeighbors[i].subnets[0]}</td>`;
+        else table += `<td rowspan="${emptyCells}"></td>`;
+    });
+
+    // make an iterator for each subnets list
+    const listsIterators = span.map(() => {
+        return 0;
+    });
+
+    for (let i = 1; i < largestSubnetsList.length; i++) {
+        //*
+        table += "<tr>";
+
+        table += `<td>${largestSubnetsList[i]}</td>`;
+        for (let j = 1; j < largestSubnetsList.length; j++) {
+            if (
+                i >= span[j] &&
+                listsIterators[j] < prefixedNeighbors[j].subnets.length
+            ) {
+                table += `<td>${
+                    prefixedNeighbors[j].subnets[listsIterators[j]]
+                }</td>`;
+                listsIterators[j]++;
+            }
+        }
+
+        table += "</tr>";
+    }
+
+    table += "</table>";
+
+    console.log(span);
+    // console.log(table);
+    // console.log(largestSubnetsList);
     return table;
 }
