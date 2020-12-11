@@ -1,80 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IP utility</title>
-    <style>
-        body{
-            background-color: #aaa;
-        }
-        table{
-            border-collapse: collapse;
-        }
-        td{
-            border: 1px #888 solid;
-            padding: 0.3rem;
-        }
-    </style>
-</head>
-<body>
-    <main>
-        <div id="JS-print"></div>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>IP utility</title>
+        <style>
+            body {
+                background-color: #aaa;
+            }
+            table {
+                border-collapse: collapse;
+            }
+            td,
+            th {
+                border: 1px #888 solid;
+                padding: 0.3rem;
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <div id="JS-print"></div>
 
-        <h1>Classful</h1>
-        <p>
-            Collect the network's info of the given unicast address
-        </p>
-        <form id="js-classful-addressing">
-            <label>Classful IP address</label>
-            <input type="text" id="js-classful-address" placeholder="example 192.168.1.2">
-            <br>
-            <button type="submit">Get info</button>
-        </form>
-        <div id="js-classful-info"></div>
+            <h1>Classful</h1>
+            <p>Collect the network's info of the given unicast address</p>
+            <form id="js-classful-addressing">
+                <label>Classful IP address</label>
+                <input
+                    type="text"
+                    id="js-classful-address"
+                    placeholder="example 192.168.1.2"
+                />
+                <br />
+                <button type="submit">Get info</button>
+            </form>
+            <div id="js-classful-info"></div>
 
-        <h1>Classless</h1>
-        <p>
-            Collect the subnets' info of the given unicast address
-        </p>
-        <form id="js-classless-addressing">
-            <label>classless IP address</label>
-            <input type="text" id="js-classfless-address" placeholder="example 192.168.1.34" value="192.168.1.34">
-            <br>
-            <label>Mask or CIDR prefix</label>
-            <input type="text" id="js-classfless-mask-or-prefix" placeholder="example 255.255.255.240 or /28" value="/28">
-            <br>
-            <button type="submit">Get info</button>
-        </form>
-        <div id="js-classless-info"></div>
-        <div id="js-classless-neighbors-info"></div>
-        <div id="js-classless-upper-prefixes-neighbors"></div>
+            <h1>Classless</h1>
+            <p>Collect the subnets' info of the given unicast address</p>
+            <form id="js-classless-addressing">
+                <label>classless IP address</label>
+                <input
+                    type="text"
+                    id="js-classfless-address"
+                    placeholder="example 192.168.1.34"
+                    value="192.168.1.34"
+                />
+                <br />
+                <label>Mask or CIDR prefix</label>
+                <input
+                    type="text"
+                    id="js-classfless-mask-or-prefix"
+                    placeholder="example 255.255.255.240 or /28"
+                    value="/28"
+                />
+                <br />
+                <button type="submit">Get info</button>
+            </form>
+            <div id="js-classless-info"></div>
+            <div id="js-classless-neighbors-info"></div>
+            <div id="js-classless-upper-prefixes-neighbors"></div>
 
-        <h1>Subnet an available network</h1>
-        <h1>Summerize subnets (supernetting)</h1>
+            <h1>Subnet an available network</h1>
+            <h1>Summerize subnets (supernetting)</h1>
+        </main>
 
-        <table>
-            <tr>
-                <td>1</td>
-                <td>2</td>
-                <td>3</td>
-            </tr>
-            <tr>
-                <td>a</td>
-                <td rowspan="3"></td>
-                <td rowspan="2">cc</td>
-            </tr>
-            <tr>
-                <td>a</td>
-            </tr>
-            <tr>
-                <td>a</td>
-                <td >cc</td>
-            </tr>
-        </table>
-
-    </main>
-
-    <script src="index.js"></script>
-</body>
+        <script src="index.js"></script>
+    </body>
 </html>

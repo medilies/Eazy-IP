@@ -55,13 +55,21 @@ classfulForm.addEventListener("submit", (e) => {
 
 classlessForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    classlessInfoDiv.innerHTML = "";
+    classlessClassLevelNeighborsInfoDiv.innerHTML = "";
+    classlessUpperPrefixesDiv.innerHTML = "";
+
     let ip = classlessIp.value.toString();
     let input = classlessPrefixOrMask.value.toString();
 
     ip = arrayIp(ip);
     if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
 
+    //-------------------------
+    // Part ONE
+    //-------------------------
     const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
+
     // cut the crap at 31 and 32 prefixes
     if (prefix == 32 || prefix == 31) {
         console.warn("This is an exceptional subnet");
@@ -69,49 +77,68 @@ classlessForm.addEventListener("submit", (e) => {
     }
 
     const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
+    const subnetTable = subnetTableGen(mainSubnetInfo);
+    classlessInfoDiv.innerHTML = subnetTable;
+
+    /**
+     * Each part has the 3 following main steps
+     * - Get info
+     * - Generate table
+     * - Put table into the page
+     */
+    //-------------------------
+    // Part TWO
+    //-------------------------
+
+    // adapt promesses scheme!
+    // Same as if (classNeighboringSubnetsList !== "Main subnet is a class level subnet")
+    if (prefix == 8 || prefix == 16 || prefix == 24) {
+        console.warn("following operations doesn't apply for this prefix/mask");
+        return;
+    }
 
     const classNeighboringSubnetsList = getClassNeighboringSubnets(
         mainSubnetInfo.subnetIp,
         mask,
         intrestingOctetIndex
     );
-
-    // console.table(mainSubnetInfo);
-    // console.table(classNeighboringSubnetsList);
-
-    const subnetTable = subnetTableGen(mainSubnetInfo);
-    classlessInfoDiv.innerHTML = subnetTable;
-
-    classlessClassLevelNeighborsInfoDiv.innerHTML = "";
-
-    if (classNeighboringSubnetsList !== "Main subnet is a class level subnet") {
-        classlessClassLevelNeighborsInfoDiv.innerHTML = `All the Possible /${prefix} subnets on ${
+    const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
+        classNeighboringSubnetsList
+    );
+    classlessClassLevelNeighborsInfoDiv.innerHTML =
+        `All the Possible /${prefix} subnets on ${
             classNeighboringSubnetsList[0].subnetIp
-        }/${8 * parseInt(prefix / 8)}`;
+        }/${8 * parseInt(prefix / 8)}` + classNeighboringSubnetsTable;
 
-        const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
-            classNeighboringSubnetsList
+    //-------------------------
+    // Part THREE
+    //-------------------------
+
+    // adapt promesses scheme!
+    if (
+        prefix - 1 == 0 ||
+        prefix - 1 == 8 ||
+        prefix - 1 == 16 ||
+        prefix - 1 == 24
+    ) {
+        console.warn(
+            "On the given prefix. The following opeations data have already been provided in previous operation"
         );
-        classlessClassLevelNeighborsInfoDiv.innerHTML += classNeighboringSubnetsTable;
+        return;
     }
 
-    // avoid 8,16,24
-    const stopPrefix = parseInt(prefix / 8) * 8;
-    const prefixedNeighbors = [];
-    for (let i = prefix - 1; i > stopPrefix; i--) {
-        const currentPrefixNeighbors = upperSubnetNeighbors(
-            mainSubnetInfo.subnetIp,
-            mask,
-            intrestingOctetIndex,
-            i
-        );
-        prefixedNeighbors.push(currentPrefixNeighbors);
-    }
-    console.log(prefixedNeighbors);
-
-    classlessUpperPrefixesDiv.innerHTML = upperPrefixNeighboringSubnetsTableGen(
+    const prefixedNeighbors = getPrefixesNeighboringSubnets(
+        mainSubnetInfo.subnetIp,
+        prefix,
+        mask,
+        intrestingOctetIndex
+    );
+    const upperPrefixNeighboringSubnetsTable = upperPrefixNeighboringSubnetsTableGen(
         prefixedNeighbors
     );
+    classlessUpperPrefixesDiv.innerHTML =
+        "<h4>Possible neighboring subnets on a varaition of prefixes</h4>" +
+        upperPrefixNeighboringSubnetsTable;
 });
 
 /**
@@ -303,6 +330,26 @@ function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
         });
     }
     return subnets;
+}
+
+function getPrefixesNeighboringSubnets(
+    mainSubnetAddress,
+    prefix,
+    mask,
+    intrestingOctetIndex
+) {
+    const stopPrefix = parseInt(prefix / 8) * 8;
+    const prefixedNeighbors = [];
+    for (let i = prefix - 1; i > stopPrefix; i--) {
+        const currentPrefixNeighbors = upperSubnetNeighbors(
+            mainSubnetAddress,
+            mask,
+            intrestingOctetIndex,
+            i
+        );
+        prefixedNeighbors.push(currentPrefixNeighbors);
+    }
+    return prefixedNeighbors;
 }
 
 function extractPrefixAndMask(input) {
@@ -503,32 +550,32 @@ function subnetTableGen(info) {
     return `
     <table>
         <tr>
-            <td>${info.ipClass == undefined ? "Subnet" : "Network"} address</td>
+            <th>${info.ipClass == undefined ? "Subnet" : "Network"} address</th>
             <td>${info.subnetIp}</td>
             </tr>
         <tr>
-            <td>First host</td>
+            <th>First host</th>
             <td>${info.firstHost}</td>
         </tr>
         <tr>
-            <td>Last host</td>
+            <th>Last host</th>
             <td>${info.lastHost}</td>
         </tr>
         <tr>
-            <td>Broadcast address</td>
+            <th>Broadcast address</th>
             <td>${info.subnetBroadcastIp}</td>
         </tr>
         <tr>
-            <td>Subnetmask</td>
+            <th>Subnetmask</th>
             <td>${info.subnetMask}</td>
         </tr>
         ${
             info.ipClass == undefined
                 ? ""
-                : `<tr><td>Class</td><td>${info.ipClass}</td></tr>`
+                : `<tr><th>Class</th><td>${info.ipClass}</td></tr>`
         }
         <tr>
-            <td>Number of Availabe hosts</td>
+            <th>Number of Availabe hosts</th>
             <td>${info.availabeHosts}</td>
         </tr>
     </table>`;
@@ -537,16 +584,16 @@ function subnetTableGen(info) {
 function classNeighboringSubnetsTableGen(neighboringInfo) {
     let table = `<table>
     <tr>
-        <td></td>
-        <td>Subnet address</td>
-        <td>First host</td>
-        <td>Last host</td>
-        <td>Broadcast address</td>
+        <th></th>
+        <th>Subnet address</th>
+        <th>First host</th>
+        <th>Last host</th>
+        <th>Broadcast address</th>
     </tr>`;
     neighboringInfo.forEach((subnet, i) => {
         table += `
         <tr>
-            <td>${i + 1}</td>
+            <th>${i + 1}</th>
             <td>${subnet.subnetIp}</td>
             <td>${subnet.firstHost}</td>
             <td>${subnet.lastHost}</td>
@@ -557,64 +604,44 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
     return table;
 }
 
+/**
+ * The result table has "SubnetListsIterators.length"|"prefixedNeighbors.length" columns & "largestSubnetsList.length" rows
+ * @param {*} prefixedNeighbors
+ */
 function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
-    let table = "<table><tr>";
+    // empty in case the user inputed an address with 8,16,24 prefix!
+    if (prefixedNeighbors.length === 0) throw "Input is empty";
+
     prefixedNeighbors.reverse();
+    // largest list is the one with with smallest prefix
     const largestSubnetsList = prefixedNeighbors[0].subnets;
 
-    // headers row
-    prefixedNeighbors.forEach((subnetsList) => {
-        table += `<td>${subnetsList.subnets[0]}/${subnetsList.prefix}</td>`;
-    });
-    table += "</tr><tr>";
-
-    // get if cells are aligned or there is an empty span
-    const span = [];
-    prefixedNeighbors.forEach((subnetsList) => {
-        if (subnetsList.subnets[0] === largestSubnetsList[0]) span.push(0);
-        else span.push(largestSubnetsList.indexOf(subnetsList.subnets[0]));
-    });
-
-    // set first row
-    span.forEach((emptyCells, i) => {
-        // console.log(emptyCells);
-        // console.log(prefixedNeighbors[i].subnets[0]);
-
-        // 0 means aligned with smallest prefix
-        if (emptyCells === 0)
-            table += `<td>${prefixedNeighbors[i].subnets[0]}</td>`;
-        else table += `<td rowspan="${emptyCells}"></td>`;
-    });
-
-    // make an iterator for each subnets list
-    const listsIterators = span.map(() => {
+    const SubnetListsIterators = prefixedNeighbors.map(() => {
         return 0;
     });
 
-    for (let i = 1; i < largestSubnetsList.length; i++) {
-        //*
+    let table = "<table>";
+    // headers row
+    table += "<tr>";
+    prefixedNeighbors.forEach((subnetsList) => {
+        table += `<th>${subnetsList.subnets[0]}/${subnetsList.prefix}</th>`;
+    });
+    table += "</tr>";
+
+    largestSubnetsList.forEach((subnet) => {
         table += "<tr>";
 
-        table += `<td>${largestSubnetsList[i]}</td>`;
-        for (let j = 1; j < largestSubnetsList.length; j++) {
-            if (
-                i >= span[j] &&
-                listsIterators[j] < prefixedNeighbors[j].subnets.length
-            ) {
-                table += `<td>${
-                    prefixedNeighbors[j].subnets[listsIterators[j]]
-                }</td>`;
-                listsIterators[j]++;
-            }
+        for (let i = 0; i < SubnetListsIterators.length; i++) {
+            const currentSubnetsList = prefixedNeighbors[i].subnets;
+            if (subnet === currentSubnetsList[SubnetListsIterators[i]]) {
+                table += `<td>${subnet}</td>`;
+                SubnetListsIterators[i]++;
+            } else table += "<td></td>";
         }
-
         table += "</tr>";
-    }
-
+    });
     table += "</table>";
 
-    console.log(span);
     // console.log(table);
-    // console.log(largestSubnetsList);
     return table;
 }
