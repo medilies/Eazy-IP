@@ -137,7 +137,7 @@ classlessForm.addEventListener("submit", (e) => {
         prefixedNeighbors
     );
     classlessUpperPrefixesDiv.innerHTML =
-        "<h4>Possible neighboring subnets on a varaition of prefixes</h4>" +
+        `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
         upperPrefixNeighboringSubnetsTable;
 });
 
