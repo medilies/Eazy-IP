@@ -3,7 +3,8 @@
 
 $db = parse_url(getenv("DATABASE_URL"));
 
-echo $_SERVER['REMOTE_ADDR'];
+echo $_SERVER['REMOTE_ADDR'] . "<br>";
+
 try {
     $pdo = new PDO("pgsql:" . sprintf(
         "host=%s;port=%s;user=%s;password=%s;dbname=%s",
@@ -14,18 +15,13 @@ try {
         ltrim($db["path"], "/")
     ));
 
-    $query = 'INSERT INTO visitors(address) VALUES(:add,)';
-
-    $query = $pdo->prepare($query);
-
-    $query->bindParam(':add', $_SERVER['REMOTE_ADDR'], PDO::PARAM_STR);
-    $query->execute();
+    $pdo->exec("INSERT INTO visitors (address) VALUES ('" . $_SERVER['REMOTE_ADDR'] . "')");
 
 } catch (PDOException $e) {
     echo "Error!: " . $e->getMessage() . "<br/>";
 }
 
-$data = $pdo->query("SELECT * FROM visitors")->fetch();
+$data = $pdo->query("SELECT * FROM visitors")->fetchAll();
 print_r($data);
 
 // INSERT INTO `visitors` (`moment`, `ip`) VALUES (current_timestamp(), '192.168.1.2');
