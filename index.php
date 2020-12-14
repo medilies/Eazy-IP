@@ -34,7 +34,8 @@ $pdo = new PDO("pgsql:" . sprintf(
     ltrim($db["path"], "/")
 ));
 
-var_dump($pdo);
+$data = $pdo->query("SELECT * FROM visitors")->fetch();
+var_dump($data);
 
 // INSERT INTO `visitors` (`moment`, `ip`) VALUES (current_timestamp(), '192.168.1.2');
 
