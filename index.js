@@ -1,14 +1,27 @@
 /**
+ * ABBREVIATIONS:
+ * for shortenning variables names!
+ * - CLF = classful
+ * - CLS = classless
+ * - LVL = level
+ *
+ * CONVENTION:
+ * - OCTETS stored inside arrays MUST always be in string format
+ * - Single ADDRESSES variables MUST always be in array format
+ * - MASK & PREFIX MUST be formated & validated at the start of their main scope
+ *
  * ADD:
  * - Warn user when he enters subnet or broadcast @ as unicast address
  * - Show the given IP inside the subnet
+ * - function that check masks validity in binary
+ * - Adopt OOP code
  *
  * NOTE:
- * - variable named blocksize aren't so fidel to the name!!
+ * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
  * - Can add an array to map number of available hosts using prefix as index
  */
 
-// Mapping arrays
+// GLOBAL MAPPING ARRAYS. helps relating prefixes and subnetmasks
 const allPrefixes = [
     [1, 2, 3, 4, 5, 6, 7, 8],
     [9, 10, 11, 12, 13, 14, 15, 16],
@@ -18,57 +31,62 @@ const allPrefixes = [
 const maskDecimals = [128, 192, 224, 240, 248, 252, 254, 255];
 // const maskBinaries = ["10000000","11000000","11100000","11110000","11111000","11111100","11111110","11111111"];
 
-// forms elements
-const classfulForm = document.querySelector("#js-classful-addressing");
-const classfulIp = document.querySelector("#js-classful-address");
-const classfulInfoDiv = document.querySelector("#js-classful-info");
+//******************
+// FORMS ELEMENTS
+//******************
+const clfForm = document.querySelector("#js-clf-addressing");
+const clfIp = document.querySelector("#js-clf-address");
+const clfDiv = document.querySelector("#js-clf-info");
 
-const classlessForm = document.querySelector("#js-classless-addressing");
-const classlessIp = document.querySelector("#js-classfless-address");
-const classlessPrefixOrMask = document.querySelector(
-    "#js-classfless-mask-or-prefix"
+const clsForm = document.querySelector("#js-cls-addressing");
+const clsIp = document.querySelector("#js-cls-address");
+const clsPrefixOrMask = document.querySelector("#js-cls-mask-or-prefix");
+const clsDiv = document.querySelector("#js-cls-info");
+const clsClassLvlNeighborsDiv = document.querySelector(
+    "#js-cls-neighbors-info"
 );
-const classlessInfoDiv = document.querySelector("#js-classless-info");
-const classlessClassLevelNeighborsInfoDiv = document.querySelector(
-    "#js-classless-neighbors-info"
-);
-const classlessUpperPrefixesDiv = document.querySelector(
-    "#js-classless-upper-prefixes-neighbors"
+const clsUpperPrefixesDiv = document.querySelector(
+    "#js-cls-upper-prefixes-neighbors"
 );
 
 // Highligh the IP in the its subnet map
 // Highlight the subnet next its neighbors
 // warn the user if he gave a network or broadcast address that is cant be used for host
 
-classfulForm.addEventListener("submit", (e) => {
+//*******************************************************
+// FORMS SUBMISSION HANDLERS
+//*******************************************************
+clfForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    let ip = classfulIp.value.toString();
-    ip = arrayIp(ip);
+
+    let ip = clfIp.value.toString();
+    ip = toArrayAddress(ip);
     if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
 
-    const networkInfo = classfulIpInfo(ip);
-    // console.table(networkInfo);
+    const networkData = getClfIpData(ip);
 
-    const subnetTable = subnetTableGen(networkInfo);
-    classfulInfoDiv.innerHTML = subnetTable;
+    const subnetTable = subnetTableGen(networkData);
+    clfDiv.innerHTML = subnetTable;
 });
 
-classlessForm.addEventListener("submit", (e) => {
+clsForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    classlessInfoDiv.innerHTML = "";
-    classlessClassLevelNeighborsInfoDiv.innerHTML = "";
-    classlessUpperPrefixesDiv.innerHTML = "";
+    clsDiv.innerHTML = "";
+    clsClassLvlNeighborsDiv.innerHTML = "";
+    clsUpperPrefixesDiv.innerHTML = "";
 
-    let ip = classlessIp.value.toString();
-    let input = classlessPrefixOrMask.value.toString();
+    let ip = clsIp.value.toString();
+    // >>>>>>>>>>>>>>>>>>>input needs to be formated as array
+    let input = clsPrefixOrMask.value.toString();
 
-    ip = arrayIp(ip);
+    ip = toArrayAddress(ip);
     if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
+
+    const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
 
     //-------------------------
     // Part ONE
     //-------------------------
-    const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
 
     // cut the crap at 31 and 32 prefixes
     if (prefix == 32 || prefix == 31) {
@@ -76,9 +94,9 @@ classlessForm.addEventListener("submit", (e) => {
         return;
     }
 
-    const mainSubnetInfo = classlessIpInfo(ip, mask, intrestingOctetIndex);
+    const mainSubnetInfo = getClsIpData(ip, mask, intrestingOctetIndex);
     const subnetTable = subnetTableGen(mainSubnetInfo);
-    classlessInfoDiv.innerHTML = subnetTable;
+    clsDiv.innerHTML = subnetTable;
 
     /**
      * Each part has the 3 following main steps
@@ -98,14 +116,14 @@ classlessForm.addEventListener("submit", (e) => {
     }
 
     const classNeighboringSubnetsList = getClassNeighboringSubnets(
-        mainSubnetInfo.subnetIp,
+        toArrayAddress(mainSubnetInfo.subnetIp),
         mask,
         intrestingOctetIndex
     );
     const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
         classNeighboringSubnetsList
     );
-    classlessClassLevelNeighborsInfoDiv.innerHTML =
+    clsClassLvlNeighborsDiv.innerHTML =
         `All the Possible /${prefix} subnets on ${
             classNeighboringSubnetsList[0].subnetIp
         }/${8 * parseInt(prefix / 8)}` + classNeighboringSubnetsTable;
@@ -128,7 +146,7 @@ classlessForm.addEventListener("submit", (e) => {
     }
 
     const prefixedNeighbors = getPrefixesNeighboringSubnets(
-        mainSubnetInfo.subnetIp,
+        toArrayAddress(mainSubnetInfo.subnetIp),
         prefix,
         mask,
         intrestingOctetIndex
@@ -136,121 +154,115 @@ classlessForm.addEventListener("submit", (e) => {
     const upperPrefixNeighboringSubnetsTable = upperPrefixNeighboringSubnetsTableGen(
         prefixedNeighbors
     );
-    classlessUpperPrefixesDiv.innerHTML =
+    clsUpperPrefixesDiv.innerHTML =
         `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
         upperPrefixNeighboringSubnetsTable;
 });
 
+function warnReservedNetwork() {
+    // ...
+}
+
+//*******************************************************
+// GENERAL PURPOSE FUNCTIONS (the simplest ?)
+//*******************************************************
+
 /**
- * Doesn't function on 8,16,24 prefixes due inexpected behviour detecting their intrestingOctet
- * @param {*} mainSubnet
- * @param {*} mainSubnetMask
- * @param {*} intrestingOctetIndex
- * @param {*} targetPrefix
+ * @param {string} address  formated as **"nb.nb.nb.nb"** or **"nb.nb.nb.nb/nb"**
+ * @returns {string[]} address formated as **["nb","nb","nb","nb"]**
  */
-function upperSubnetNeighbors(
-    mainSubnet,
-    mainSubnetMask,
-    intrestingOctetIndex,
-    targetPrefix
-) {
-    if (targetPrefix == 8 || targetPrefix == 16 || targetPrefix == 24)
-        return "This doesn't a class level subnet's subnets";
-
-    if (mainSubnetMask[intrestingOctetIndex] == "255")
-        return "This function doesn't locate Class level subnets neighbors";
-
-    mainSubnet = arrayIp(mainSubnet);
-    const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
-    const targetBlockSize = getBlockSize(targetMask, intrestingOctetIndex);
-    const parentSubnetIndex = parseInt(
-        mainSubnet[intrestingOctetIndex] / targetBlockSize
-    );
-
-    const iterativeBlockSize = getBlockSize(
-        mainSubnetMask,
-        intrestingOctetIndex
-    );
-
-    let theOctet = targetBlockSize * parentSubnetIndex;
-    const subnets = [];
-
-    for (let i = 0; i < targetBlockSize; i += iterativeBlockSize) {
-        // from now on mainsubnet looses its meanning. its just an IP array
-        mainSubnet[intrestingOctetIndex] = theOctet.toString();
-        subnets.push(mainSubnet.join("."));
-        theOctet += iterativeBlockSize;
+function toArrayAddress(address) {
+    // check if already formated as ["nb","nb","nb","nb"]
+    if (Array.isArray(address) && address.length === 4) {
+        console.warn("needless use for this function");
+        return address;
     }
-
-    // console.log(subnets);
-    return { subnets: subnets, prefix: targetPrefix };
+    // check if formated as "nb.nb.nb.nb/nb" then format it as "nb.nb.nb.nb"
+    if (address.includes("/"))
+        address = address.substr(0, address.indexOf("/"));
+    // return "nb.nb.nb.nb" as ["nb","nb","nb","nb"]
+    return address.split(".");
 }
 
-// adapt to promesses
-function classfulIpInfo(ip) {
-    const ipClass = getClassOfIp(ip[0]);
-    let networkOctets;
-    let availabeHosts;
-    let mask;
-
-    switch (ipClass) {
-        case "class A":
-            networkOctets = 0;
-            availabeHosts = 16777214;
-            mask = "255.0.0.0";
-            break;
-        case "class B":
-            networkOctets = 1;
-            availabeHosts = 65534;
-            mask = "255.255.0.0";
-            break;
-        case "class C":
-            networkOctets = 2;
-            availabeHosts = 254;
-            mask = "255.255.255.0";
-            break;
-        default:
-            console.error("u cant work with this class");
-            break;
-    }
-
-    const subnetMap = subnetMapping(ip, arrayIp(mask), networkOctets);
-
-    return {
-        subnetIp: subnetMap[0].join("."),
-        firstHost: subnetMap[1].join("."),
-        lastHost: subnetMap[2].join("."),
-        subnetBroadcastIp: subnetMap[3].join("."),
-        subnetMask: mask,
-        ipClass: ipClass,
-        availabeHosts: availabeHosts,
-    };
-}
-
-function classlessIpInfo(ip, mask, intrestingOctetIndex) {
-    const subnetMap = subnetMapping(ip, mask, intrestingOctetIndex);
-
-    return {
-        subnetIp: subnetMap[0].join("."),
-        firstHost: subnetMap[1].join("."),
-        lastHost: subnetMap[2].join("."),
-        subnetBroadcastIp: subnetMap[3].join("."),
-        subnetMask: mask.join("."),
-        availabeHosts: subnetMap[4],
-    };
+// checking masks would be better with a funtion that checks that all 1s in binary are on the left
+/**
+ * @param {string | number} octet gets verified if within [0-255]
+ */
+function octetRangeIsValid(octet) {
+    octet = parseInt(octet);
+    if (octet >= 0 && octet <= 255) return true;
+    return false;
 }
 
 /**
- * all IPs are in a array format
- * @param {*} ip
- * @param {*} mask
- * @param {*} intrestingOctetIndex
+ * MUST be compared with true : **if Result===true**
+ * @param {string[]} address
+ * @requires octetRangeIsValid() applied on every octet
+ * @requires toArrayAddress() EXTRA! used in case address isn't string[]
+ */
+function ipv4RangeValidity(address) {
+    let report = "";
+
+    if (!Array.isArray(address)) address = toArrayAddress(address);
+
+    if (address.length !== 4) report += "<br>Address doesn't have 4 octets";
+
+    // replcae this with html text
+    report += `${octetRangeIsValid(address[0]) ? "" : "<br>invalid 1st octet"}${
+        octetRangeIsValid(address[1]) ? "" : "<br>invalid 2nd octet"
+    }${octetRangeIsValid(address[2]) ? "" : "<br>invalid 3rd octet"}${
+        octetRangeIsValid(address[3]) ? "" : "<br>invalid 4th octet"
+    }`;
+
+    if (report === "") return true;
+    return report;
+}
+
+/**
+ * @param {number} prefix
+ */
+function prefixRangeValidty(prefix) {
+    if (prefix > 0 && prefix < 33) return true;
+    return false;
+}
+
+/**
+ * First octet from left that isnt set to 255 is the intresting octet
+ * @param {array} mask
+ */
+function getIntrestingOctetIndexFromMask(mask) {
+    for (let i = 0; i <= 3; i++) {
+        if (mask[i] !== "255" && mask[i] !== "0") return i;
+        else if (mask[i - 1] === "255" && mask[i] === "0") return i - 1;
+        else if (mask[i] === "255" && i === 3) return 3;
+    }
+    throw "didn't find intresting octet index";
+}
+
+/**
+ * **NOTE:** /8 /16 /24 /32 masks results in **blocksize === 1** because 256 - 255 = 1
+ *
+ * **=>** this behaviour is being exploited!
+ * @param {array} mask
+ * @param {number} intrestingOctetIndex
+ */
+function getBlockSize(mask, intrestingOctetIndex) {
+    return 256 - mask[intrestingOctetIndex];
+}
+
+/**
+ * Can be applied on any address (any prefix, any value ...)
+ *
+ * returns an array of addresses[] Subnet, First host, Last Host, Broadcast
+ * @param {array} ip used to map all other returned addresses
+ * @param {array} mask used to get block size
+ * @param {number} intrestingOctetIndex
+ * @returns {string[] | number}
  */
 function subnetMapping(ip, mask, intrestingOctetIndex) {
     const blockSize = getBlockSize(mask, intrestingOctetIndex);
 
     const subnetIndex = parseInt(ip[intrestingOctetIndex] / blockSize);
-    // console.log(intrestingOctetIndex, blockSize, subnetIndex);
 
     const subnetIp = ip.map((octet, i) => {
         if (i === intrestingOctetIndex)
@@ -283,9 +295,10 @@ function subnetMapping(ip, mask, intrestingOctetIndex) {
 }
 
 /**
- * The math in this function can be replaced by a mapping array All possibilities indexed with prefix
- * @param {*} intrestingOctetIndex
- * @param {*} blockSize
+ * Simple
+ * used once in subnetMapping()
+ * @param {number} intrestingOctetIndex
+ * @param {number} blockSize
  */
 function hostsPerSubnet(intrestingOctetIndex, blockSize) {
     switch (intrestingOctetIndex) {
@@ -303,91 +316,35 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
 }
 
 /**
- * Assumes FIXED Length Subneting
- * @param {*} mainSubnet
- * @param {*} mask
- * @param {*} intrestingOctetIndex
+ * **Strips** the "/" from the prefix if its formated as "/nb"
+ *
+ * ALSO **varifies VALIDITY**
+ *
+ * May requires extra refactoring ?
+ * @param {string | number} prefix
+ * @returns {number} prefix
+ * @throws ...
  */
-function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
-    if (mask[intrestingOctetIndex] == 255)
-        return "Main subnet is a class level subnet";
-
-    const blockSize = getBlockSize(mask, intrestingOctetIndex);
-    const currentSubnet = arrayIp(mainSubnet);
-    const subnets = [];
-    for (let i = 0; i < 256; i += blockSize) {
-        currentSubnet[intrestingOctetIndex] = i.toString();
-        currentSubnetMap = subnetMapping(
-            currentSubnet,
-            mask,
-            intrestingOctetIndex
-        );
-        subnets.push({
-            subnetIp: currentSubnetMap[0].join("."),
-            firstHost: currentSubnetMap[1].join("."),
-            lastHost: currentSubnetMap[2].join("."),
-            subnetBroadcastIp: currentSubnetMap[3].join("."),
-        });
+function decimalPrefix(prefix) {
+    if (Number.isInteger(prefix)) {
+        if (prefixRangeValidty(prefix)) return prefix;
+        else throw "Out of bound prefix";
     }
-    return subnets;
-}
 
-function getPrefixesNeighboringSubnets(
-    mainSubnetAddress,
-    prefix,
-    mask,
-    intrestingOctetIndex
-) {
-    const stopPrefix = parseInt(prefix / 8) * 8;
-    const prefixedNeighbors = [];
-    for (let i = prefix - 1; i > stopPrefix; i--) {
-        const currentPrefixNeighbors = upperSubnetNeighbors(
-            mainSubnetAddress,
-            mask,
-            intrestingOctetIndex,
-            i
-        );
-        prefixedNeighbors.push(currentPrefixNeighbors);
-    }
-    return prefixedNeighbors;
-}
+    // Not a integer then MUST be "/nb" or "nb"
+    if (prefix.includes("/")) prefix = prefix.substr(1);
 
-function extractPrefixAndMask(input) {
-    let mask = [];
-    let prefix;
-    let intrestingOctetIndex;
-    // Mask
-    if (input.length > 5) {
-        // needs a new vality test function => all 1 bits on left
-        if (ipv4RangeValidity(input) !== true)
-            console.error("invalid values in mask");
+    prefix = parseInt(prefix);
 
-        mask = arrayIp(input);
-        intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
-        prefix = maskToPrefix(mask, intrestingOctetIndex);
-    }
-    // Prefix
-    if (input.length < 5) {
-        prefix = decimalPrefix(input);
-        intrestingOctetIndex = parseInt((prefix - 1) / 8);
-        mask = prefixToMask(prefix, intrestingOctetIndex);
-    }
-    // console.log(mask, prefix);
-
-    return { mask, prefix, intrestingOctetIndex };
+    if (prefixRangeValidty(prefix)) return prefix;
+    else throw "Out of bound prefix";
 }
 
 /**
- * intresting octet gives index of the subneted octet [0|1|2|3]
+ * Simple & requires the global mapping arrays
+ * @param {number} prefix
+ * @param {number} intrestingOctetIndex
  */
-function maskToPrefix(mask, intrestingOctetIndex) {
-    const mappingIndex = maskDecimals.indexOf(
-        parseInt(mask[intrestingOctetIndex])
-    );
-    const prefix = allPrefixes[intrestingOctetIndex][mappingIndex];
-    return prefix;
-}
-
 function prefixToMask(prefix, intrestingOctetIndex) {
     let mask;
 
@@ -410,130 +367,74 @@ function prefixToMask(prefix, intrestingOctetIndex) {
             break;
     }
 
-    // 8,16,24 prefixes has their intrestingOctetIndex+1
     const mappingIndex = allPrefixes[intrestingOctetIndex].indexOf(prefix);
-    // console.log(mappingIndex, prefix, intrestingOctetIndex);
 
     // last modification on the preset mask
     mask[intrestingOctetIndex] = maskDecimals[mappingIndex].toString();
+
     return mask;
 }
 
 /**
- * First octet from left that isnt set to 255 is the intresting octet
+ * Simple & requires the global mapping arrays
+ * @param {array} mask
+ * @param {number} intrestingOctetIndex  gives index of the subneted octet [0|1|2|3]
  */
-function getIntrestingOctetIndexFromMask(mask) {
-    // loop through the 4 octets
-    for (let i = 0; i <= 3; i++) {
-        if (mask[i] !== "255" && mask[i] !== "0") return i;
-        else if (mask[i - 1] === "255" && mask[i] === "0") return i - 1;
-        else if (mask[i] === "255" && i === 3) return 3;
+function maskToPrefix(mask, intrestingOctetIndex) {
+    const mappingIndex = maskDecimals.indexOf(
+        parseInt(mask[intrestingOctetIndex])
+    );
+
+    const prefix = allPrefixes[intrestingOctetIndex][mappingIndex];
+
+    return prefix;
+}
+
+/**
+ * Returns **VALID** mask & prefix
+ * used when form input allows user to enter one option. PREFIX or MASK, and futur operations requires both
+ * @param {string} input
+ * @requires ipv4RangeValidity()
+ * @requires getIntrestingOctetIndexFromMask()
+ * @requires maskToPrefix()
+ * @requires prefixToMask()
+ * @throws "invalid values in mask"
+ */
+function extractPrefixAndMask(input) {
+    let mask = [];
+    let prefix;
+    let intrestingOctetIndex;
+
+    // Mask
+    if (input.length > 6) {
+        // needs a new validity test function => all 1 bits on left
+        if (ipv4RangeValidity(input) !== true) throw "invalid values in mask";
+
+        mask = toArrayAddress(input);
+        intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
+        prefix = maskToPrefix(mask, intrestingOctetIndex);
     }
-    console.error("didnt find intresting octet");
-}
-
-/**
- * 8, 16, 24, 32 prefixes' masks give blocksize of 1 bcz 256 - 255 = 1
- * this type of behaviour is being exploited!
- * @param {*} mask array
- * @param {*} intrestingOctetIndex 0-3
- */
-function getBlockSize(mask, intrestingOctetIndex) {
-    return 256 - mask[intrestingOctetIndex];
-}
-
-/**
- * takes "nb.nb.nb.nb" or "nb.nb.nb.nb/nb" and returns ["nb","nb","nb","nb"]
- */
-function arrayIp(ip) {
-    // check if formated as ["nb","nb","nb","nb"]
-    if (Array.isArray(ip) && ip.length === 4)
-        console.warn("needless use for this function");
-    // if not array then string
-    // check if formated as "nb.nb.nb.nb/nb" then format it as "nb.nb.nb.nb"
-    if (ip.includes("/")) ip = ip.substr(0, ip.indexOf("/"));
-    // return "nb.nb.nb.nb" as ["nb","nb","nb","nb"]
-    return ip.split(".");
-}
-
-/**
- * uses octetRangeIsValid() on every octet
- */
-function ipv4RangeValidity(ip) {
-    let report = "";
-    if (!Array.isArray(ip)) ip = arrayIp(ip);
-    if (ip.length !== 4) report += "IP do not have 4 octets/";
-
-    // replcae this with html text
-    report += `${octetRangeIsValid(ip[0]) ? "" : "/invalid A octet"}${
-        octetRangeIsValid(ip[1]) ? "" : "/invalid B octet"
-    }${octetRangeIsValid(ip[2]) ? "" : "/invalid C octet"}${
-        octetRangeIsValid(ip[3]) ? "" : "/invalid D octet"
-    }`;
-
-    if (report === "") return true;
-    return report;
-}
-
-/**
- * Integer or string within [0-255]
- */
-function octetRangeIsValid(octet) {
-    // console.log(octet);
-    octet = parseInt(octet);
-    if (octet >= 0 && octet <= 255) return true;
-    return false;
-}
-
-function decimalPrefix(prefix) {
-    // need more precises way to check IsInt?
-    if (!isNaN(prefix) && prefix >= 1 && prefix <= 32) return parseInt(prefix);
-    // string "/nb" to "nb"
-    if (prefix.includes("/")) prefix = prefix.substr(1);
-    prefix = parseInt(prefix);
-    if (prefix <= 0 || prefix >= 33) throw "impossible prefix";
-    else return prefix;
-}
-
-function warnReservedNetwork() {
-    // ...
-}
-
-/**
- * octet can be int or string between 0 & 255
- * Returns a binary octet in string format
- */
-function decimalToBinary(octet) {
-    octet = parseInt(octet);
-    if (!octetRangeIsValid(octet)) console.error("invalide octet");
-
-    let bin = "";
-    let rest;
-    for (let i = 0; i < 8; i++) {
-        rest = octet % 2;
-        octet = parseInt(octet / 2);
-        bin = rest + bin;
+    // Prefix
+    else if (input.length < 4) {
+        prefix = decimalPrefix(input);
+        intrestingOctetIndex = parseInt((prefix - 1) / 8);
+        mask = prefixToMask(prefix, intrestingOctetIndex);
     }
-    return bin;
-}
+    // exception
+    else throw "unexpected input length while extracting mask & prefix";
 
-function binaryToDecimal(bin) {
-    let decimal = 0;
-    let power = 7;
-    for (let i = 0; i < 8; i++) {
-        if (bin[i] === "1") decimal += Math.pow(2, power);
-        power--;
-    }
-    return decimal;
+    return { mask, prefix, intrestingOctetIndex };
 }
 
 /**
- * firstOctet can be int or string between 0 & 255
+ * @param {string} firstOctet
+ * @requires octetRangeIsValid()
+ * @throws "invalide first octet" when first octet isn't in [0-255]
  */
 function getClassOfIp(firstOctet) {
-    // console.log(firstOctet);
     firstOctet = parseInt(firstOctet);
-    if (!octetRangeIsValid(firstOctet)) console.error("invalide first octet");
+
+    if (!octetRangeIsValid(firstOctet)) throw "invalide first octet";
 
     if (firstOctet >= 0 && firstOctet <= 127) return "class A";
     if (firstOctet >= 128 && firstOctet <= 191) return "class B";
@@ -542,9 +443,50 @@ function getClassOfIp(firstOctet) {
     if (firstOctet >= 240 && firstOctet <= 255) return "class E";
 }
 
+// UNUSED:
+
 /**
- * need to include prefixe
- * @param {*} info
+ * octet can be int or string between 0 & 255
+ * Returns a binary octet in string format
+ */
+function decimalToBinary(decimalOctet) {
+    decimalOctet = parseInt(decimalOctet);
+    if (!octetRangeIsValid(decimalOctet)) console.error("invalide octet");
+
+    let bin = "";
+    let rest;
+    for (let i = 0; i < 8; i++) {
+        rest = decimalOctet % 2;
+        decimalOctet = parseInt(decimalOctet / 2);
+        bin = rest + bin;
+    }
+    return bin;
+}
+
+/**
+ *
+ * @param {string} binaryOctet
+ */
+function binaryToDecimal(binaryOctet) {
+    let decimal = 0;
+    let power = 7;
+    for (let i = 0; i < 8; i++) {
+        if (binaryOctet[i] === "1") decimal += Math.pow(2, power);
+        power--;
+    }
+    return decimal;
+}
+
+//*******************************************************
+// HTML TABLE GENERATION  FUNCTIONS
+//*******************************************************
+
+/**
+ * Used in for any single subnet (classless/classful)
+ *
+ * @param {*} info The object containning network or subnet data {Subnet, firstHost, lastHost, broadcast, available hosts ...}
+ *
+ * needs to include prefixe
  */
 function subnetTableGen(info) {
     return `
@@ -581,6 +523,9 @@ function subnetTableGen(info) {
     </table>`;
 }
 
+/**
+ * @param {*} neighboringInfo
+ */
 function classNeighboringSubnetsTableGen(neighboringInfo) {
     let table = `<table>
     <tr>
@@ -606,6 +551,9 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
 
 /**
  * The result table has "SubnetListsIterators.length"|"prefixedNeighbors.length" columns & "largestSubnetsList.length" rows
+ *
+ * a bit complexe to explain just debug it to understand
+ *
  * @param {*} prefixedNeighbors
  */
 function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
@@ -616,6 +564,7 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     // largest list is the one with with smallest prefix
     const largestSubnetsList = prefixedNeighbors[0].subnets;
 
+    // [0,0,0...]
     const SubnetListsIterators = prefixedNeighbors.map(() => {
         return 0;
     });
@@ -628,20 +577,239 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     });
     table += "</tr>";
 
+    // CORE LOOP
     largestSubnetsList.forEach((subnet) => {
         table += "<tr>";
 
         for (let i = 0; i < SubnetListsIterators.length; i++) {
             const currentSubnetsList = prefixedNeighbors[i].subnets;
+
             if (subnet === currentSubnetsList[SubnetListsIterators[i]]) {
                 table += `<td>${subnet}</td>`;
                 SubnetListsIterators[i]++;
-            } else table += "<td></td>";
+            }
+            //*
+            else table += "<td></td>";
         }
+
         table += "</tr>";
     });
+
     table += "</table>";
 
-    // console.log(table);
     return table;
+}
+
+//*******************************************************
+// CASE SPECIFIC FUNCTIONS (called once)
+//*******************************************************
+
+/**
+ * The main function in classful IP option
+ *
+ * Asselble related data in a meanningful object
+ * @param {string[]} ip
+ * @requires getClassOfIp()
+ * @requires subnetMapping()
+ * @throws "unexpected class of IP"
+ */
+function getClfIpData(ip) {
+    let networkOctets;
+    let availabeHosts;
+    let mask;
+
+    const ipClass = getClassOfIp(ip[0]);
+
+    switch (ipClass) {
+        case "class A":
+            networkOctets = 0;
+            availabeHosts = 16777214;
+            mask = "255.0.0.0";
+            break;
+        case "class B":
+            networkOctets = 1;
+            availabeHosts = 65534;
+            mask = "255.255.0.0";
+            break;
+        case "class C":
+            networkOctets = 2;
+            availabeHosts = 254;
+            mask = "255.255.255.0";
+            break;
+        default:
+            throw "unexpected class of IP";
+    }
+
+    const subnetMap = subnetMapping(ip, toArrayAddress(mask), networkOctets);
+
+    return {
+        subnetIp: subnetMap[0].join("."),
+        firstHost: subnetMap[1].join("."),
+        lastHost: subnetMap[2].join("."),
+        subnetBroadcastIp: subnetMap[3].join("."),
+        subnetMask: mask,
+        ipClass: ipClass,
+        availabeHosts: availabeHosts,
+    };
+}
+
+/**
+ * The main function in classless IP option
+ *
+ * Asselble related data in a meanningful object
+ * @param {string[]} ip
+ * @param {string[]} mask
+ * @param {number} intrestingOctetIndex
+ * @requires subnetMapping() The only operation!
+ */
+function getClsIpData(ip, mask, intrestingOctetIndex) {
+    const subnetMap = subnetMapping(ip, mask, intrestingOctetIndex);
+
+    return {
+        subnetIp: subnetMap[0].join("."),
+        firstHost: subnetMap[1].join("."),
+        lastHost: subnetMap[2].join("."),
+        subnetBroadcastIp: subnetMap[3].join("."),
+        subnetMask: mask.join("."),
+        availabeHosts: subnetMap[4],
+    };
+}
+
+/**
+ * Assumes FIXED Length Subneting
+ *
+ * **EXAMPLE** main subnet is 192.168.1.112/29
+ *
+ * This function will return all /29 subnets contained within 192.168.1.0/24
+ *
+ * @param {string[]} mainSubnet
+ * @param {string[]} mask
+ * @param {number} intrestingOctetIndex
+ */
+function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
+    if (mask[intrestingOctetIndex] == "255")
+        return "Main subnet is a class level subnet";
+
+    const blockSize = getBlockSize(mask, intrestingOctetIndex);
+    const currentSubnet = mainSubnet;
+    const subnets = [];
+
+    for (let theOctet = 0; theOctet < 256; theOctet += blockSize) {
+        currentSubnet[intrestingOctetIndex] = theOctet.toString();
+
+        currentSubnetMap = subnetMapping(
+            currentSubnet,
+            mask,
+            intrestingOctetIndex
+        );
+
+        subnets.push({
+            subnetIp: currentSubnetMap[0].join("."),
+            firstHost: currentSubnetMap[1].join("."),
+            lastHost: currentSubnetMap[2].join("."),
+            subnetBroadcastIp: currentSubnetMap[3].join("."),
+        });
+    }
+    return subnets;
+}
+
+/**
+ * /8 /16 /24 prefixes causes inexpected behviour **(results blocksize of 1 ?)**
+ *
+ * LOCATES the larger subnet that wraps main subnet & its neighbors
+ *
+ * THEN return all the little subnets in strings array
+ * @param {string[]} mainSubnet
+ * @param {string[]} mainSubnetMask
+ * @param {number} intrestingOctetIndex
+ * @param {number} targetPrefix values can be: **[1-7][9-15][17-23][25-30]**
+ * @requires prefixToMask()
+ * @requires getBlockSize()
+ * @throws classful problems
+ */
+function upperSubnetNeighbors(
+    mainSubnet,
+    mainSubnetMask,
+    intrestingOctetIndex,
+    targetPrefix
+) {
+    if (targetPrefix == 8 || targetPrefix == 16 || targetPrefix == 24)
+        throw "class level subnet aren't handled here";
+
+    if (mainSubnetMask[intrestingOctetIndex] == "255")
+        throw "This function doesn't locate Class level subnets neighbors";
+
+    // Locate the larger subnet that wraps the Main Subnet
+    const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
+    const targetBlockSize = getBlockSize(targetMask, intrestingOctetIndex);
+    const parentSubnetIndex = Math.floor(
+        mainSubnet[intrestingOctetIndex] / targetBlockSize
+    );
+
+    // set Main Subnet blocksize to iterate with through neighbors
+    const iterativeBlockSize = getBlockSize(
+        mainSubnetMask,
+        intrestingOctetIndex
+    );
+
+    // loop variables
+    const currentSubnet = mainSubnet;
+    let theOctet = targetBlockSize * parentSubnetIndex;
+    const subnets = [];
+
+    /**
+     * EXAMPLE /28.blocksize===16 /26.blocksize===64 => 0:16:64
+     *     192.168.1.[64,80,96,112]/28 indide 192.168.1.64/26
+     */
+    for (let i = 0; i < targetBlockSize; i += iterativeBlockSize) {
+        currentSubnet[intrestingOctetIndex] = theOctet.toString();
+
+        subnets.push(currentSubnet.join("."));
+
+        theOctet += iterativeBlockSize;
+    }
+
+    return { subnets: subnets, prefix: targetPrefix };
+}
+
+/**
+ * Just wrap upperSubnetNeighbors() Results for larger prefixes in a array
+ *
+ * **EXAMPLE:** if the studied prefix is **28**, this function will loop with upperSubnetNeighbors() and get info of /27 /26 /25 focusing on the /28
+ *
+ * The **for loop** starts at studiedPrefix-1. That's why /1 /9 /17 /25 are excluded, Because 25-1=24 (24===stop prefix) => then the function retuns an **empty Array**
+ *
+ * Also /0 /8 /16 /24 are covered by **getClassNeighboringSubnets()**
+ * @param {string[]} mainSubnetAddress
+ * @param {number} prefix values can be: **[2-7][10-15][18-23][26-30]**
+ * @param {string[]} mask
+ * @param {number} intrestingOctetIndex
+ * @requires upperSubnetNeighbors()
+ */
+function getPrefixesNeighboringSubnets(
+    mainSubnetAddress,
+    prefix,
+    mask,
+    intrestingOctetIndex
+) {
+    if (prefix == 8 || prefix == 16 || prefix == 24)
+        throw "class level subnet aren't handled here";
+
+    if (prefix == 1 || prefix == 9 || prefix == 17 || prefix == 25)
+        throw "Insupported prefix for getting upper subnets neighbors";
+
+    const stopPrefix = Math.floor(prefix / 8) * 8;
+    const prefixedNeighbors = [];
+
+    for (let i = prefix - 1; i > stopPrefix; i--) {
+        const currentPrefixNeighbors = upperSubnetNeighbors(
+            mainSubnetAddress,
+            mask,
+            intrestingOctetIndex,
+            i
+        );
+        prefixedNeighbors.push(currentPrefixNeighbors);
+    }
+
+    return prefixedNeighbors;
 }
