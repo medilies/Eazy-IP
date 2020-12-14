@@ -3,8 +3,6 @@
 
 $db = parse_url(getenv("DATABASE_URL"));
 
-echo $_SERVER['REMOTE_ADDR'] . "<br>";
-
 try {
     $pdo = new PDO("pgsql:" . sprintf(
         "host=%s;port=%s;user=%s;password=%s;dbname=%s",
@@ -20,10 +18,5 @@ try {
 } catch (PDOException $e) {
     echo "Error!: " . $e->getMessage() . "<br/>";
 }
-
-$data = $pdo->query("SELECT * FROM visitors")->fetchAll();
-print_r($data);
-
-// INSERT INTO `visitors` (`moment`, `ip`) VALUES (current_timestamp(), '192.168.1.2');
 
 require_once "./index.html";
