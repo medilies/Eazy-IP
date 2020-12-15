@@ -9,12 +9,13 @@
  * - OCTETS stored inside arrays MUST always be in string format
  * - Single ADDRESSES variables MUST always be in array format
  * - MASK & PREFIX MUST be formated & validated at the start of their main scope
+ * - thrown errors preceeded with the comment EXCEPTION aren't meant to be catched
  *
  * ADD:
  * - Warn user when he enters subnet or broadcast @ as unicast address
  * - Show the given IP inside the subnet
  * - function that check masks validity in binary
- * - Adopt OOP code
+ * - Adopt OOP code || functional promesses
  *
  * NOTE:
  * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
@@ -61,7 +62,9 @@ clfForm.addEventListener("submit", (e) => {
 
     let ip = clfIp.value.toString();
     ip = toArrayAddress(ip);
-    if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
+
+    //VVVVVVVVVVVVVVVVVVVVVVVVVVVV handle the error
+    ipv4RangeValidity(ip);
 
     const networkData = getClfIpData(ip);
 
@@ -75,88 +78,90 @@ clsForm.addEventListener("submit", (e) => {
     clsClassLvlNeighborsDiv.innerHTML = "";
     clsUpperPrefixesDiv.innerHTML = "";
 
+    // will this make tracing error hard ?
     let ip = clsIp.value.toString();
     // >>>>>>>>>>>>>>>>>>>input needs to be formated as array
     let input = clsPrefixOrMask.value.toString();
 
-    ip = toArrayAddress(ip);
-    if (ipv4RangeValidity(ip) !== true) console.error("invalid values in ip");
+    try {
+        ip = toArrayAddress(ip);
+        ipv4RangeValidity(ip);
 
-    const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(input);
-
-    //-------------------------
-    // Part ONE
-    //-------------------------
-
-    // cut the crap at 31 and 32 prefixes
-    if (prefix == 32 || prefix == 31) {
-        console.warn("This is an exceptional subnet");
-        return;
-    }
-
-    const mainSubnetInfo = getClsIpData(ip, mask, intrestingOctetIndex);
-    const subnetTable = subnetTableGen(mainSubnetInfo);
-    clsDiv.innerHTML = subnetTable;
-
-    /**
-     * Each part has the 3 following main steps
-     * - Get info
-     * - Generate table
-     * - Put table into the page
-     */
-    //-------------------------
-    // Part TWO
-    //-------------------------
-
-    // adapt promesses scheme!
-    // Same as if (classNeighboringSubnetsList !== "Main subnet is a class level subnet")
-    if (prefix == 8 || prefix == 16 || prefix == 24) {
-        console.warn("following operations doesn't apply for this prefix/mask");
-        return;
-    }
-
-    const classNeighboringSubnetsList = getClassNeighboringSubnets(
-        toArrayAddress(mainSubnetInfo.subnetIp),
-        mask,
-        intrestingOctetIndex
-    );
-    const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
-        classNeighboringSubnetsList
-    );
-    clsClassLvlNeighborsDiv.innerHTML =
-        `All the Possible /${prefix} subnets on ${
-            classNeighboringSubnetsList[0].subnetIp
-        }/${8 * parseInt(prefix / 8)}` + classNeighboringSubnetsTable;
-
-    //-------------------------
-    // Part THREE
-    //-------------------------
-
-    // adapt promesses scheme!
-    if (
-        prefix - 1 == 0 ||
-        prefix - 1 == 8 ||
-        prefix - 1 == 16 ||
-        prefix - 1 == 24
-    ) {
-        console.warn(
-            "On the given prefix. The following opeations data have already been provided in previous operation"
+        const { mask, prefix, intrestingOctetIndex } = extractPrefixAndMask(
+            input
         );
-        return;
-    }
 
-    const prefixedNeighbors = getPrefixesNeighboringSubnets(
-        toArrayAddress(mainSubnetInfo.subnetIp),
-        prefix,
-        mask,
-        intrestingOctetIndex
-    );
-    const upperPrefixNeighboringSubnetsTable = upperPrefixNeighboringSubnetsTableGen(
-        prefixedNeighbors
-    );
-    clsUpperPrefixesDiv.innerHTML =
-        `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
-        upperPrefixNeighboringSubnetsTable;
+        /**
+         * Each part has the 3 following main steps
+         * - Get info
+         * - Generate table
+         * - Put table into the page
+         */
+
+        //-------------------------
+        // Part ONE
+        //-------------------------
+
+        // cut the crap at 31 and 32 prefixes
+        if ([31, 32].includes(prefix))
+            throw `There is no specs to analyse about the /${prefix} prefix`;
+
+        const mainSubnetInfo = getClsIpData(ip, mask, intrestingOctetIndex);
+        const subnetTable = subnetTableGen(mainSubnetInfo);
+        clsDiv.innerHTML = subnetTable;
+
+        //-------------------------
+        // Part TWO
+        //-------------------------
+
+        // Same as if (classNeighboringSubnetsList !== "Main subnet is a class level subnet")
+        if ([8, 16, 24].includes(prefix))
+            throw "No class level neighbors to show";
+
+        const classNeighboringSubnetsList = getClassNeighboringSubnets(
+            toArrayAddress(mainSubnetInfo.subnetIp),
+            mask,
+            intrestingOctetIndex
+        );
+        const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
+            classNeighboringSubnetsList
+        );
+        clsClassLvlNeighborsDiv.innerHTML =
+            `All the Possible /${prefix} subnets on ${
+                classNeighboringSubnetsList[0].subnetIp
+            }/${8 * parseInt(prefix / 8)}` + classNeighboringSubnetsTable;
+
+        //-------------------------
+        // Part THREE
+        //-------------------------
+
+        if ([0, 1, 8, 9, 16, 17, 24, 25].includes(prefix))
+            throw "No prfix level neighbors to show";
+
+        const prefixedNeighbors = getPrefixesNeighboringSubnets(
+            toArrayAddress(mainSubnetInfo.subnetIp),
+            prefix,
+            mask,
+            intrestingOctetIndex
+        );
+        const upperPrefixNeighboringSubnetsTable = upperPrefixNeighboringSubnetsTableGen(
+            prefixedNeighbors
+        );
+        clsUpperPrefixesDiv.innerHTML =
+            `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
+            upperPrefixNeighboringSubnetsTable;
+    } catch (err) {
+        if (err.includes("There is no specs to analyse about the /"))
+            console.warn(err);
+        else if (err === "No class level neighbors to show") console.warn(err);
+        else if (err === "No prfix level neighbors to show") console.warn(err);
+        else if (
+            err.includes("It may include an octet with value out of the range")
+        )
+            console.warn(err);
+        else if (err === "Out of bound prefix") console.warn(err);
+        else console.error(err);
+    }
 });
 
 function warnReservedNetwork() {
@@ -195,35 +200,37 @@ function octetRangeIsValid(octet) {
 }
 
 /**
- * MUST be compared with true : **if Result===true**
+ * returns true or throw error
  * @param {string[]} address
  * @requires octetRangeIsValid() applied on every octet
  * @requires toArrayAddress() EXTRA! used in case address isn't string[]
+ * @throws out of range octet
  */
 function ipv4RangeValidity(address) {
-    let report = "";
-
     if (!Array.isArray(address)) address = toArrayAddress(address);
 
-    if (address.length !== 4) report += "<br>Address doesn't have 4 octets";
-
-    // replcae this with html text
-    report += `${octetRangeIsValid(address[0]) ? "" : "<br>invalid 1st octet"}${
-        octetRangeIsValid(address[1]) ? "" : "<br>invalid 2nd octet"
-    }${octetRangeIsValid(address[2]) ? "" : "<br>invalid 3rd octet"}${
-        octetRangeIsValid(address[3]) ? "" : "<br>invalid 4th octet"
-    }`;
-
-    if (report === "") return true;
-    return report;
+    if (
+        octetRangeIsValid(address[0]) &&
+        octetRangeIsValid(address[1]) &&
+        octetRangeIsValid(address[2]) &&
+        octetRangeIsValid(address[3]) &&
+        address.length === 4
+    )
+        return true;
+    else
+        throw `The address ${address} is invalid! It may include an octet with value out of the range [0-255], or not be formed of exactly 4 octets`;
 }
 
 /**
  * @param {number} prefix
+ * @throws "Out of bound prefix"
+ * @throws "Bad function use" when param isn't an interger string or number
  */
 function prefixRangeValidty(prefix) {
+    // exception
+    if (isNaN(prefix)) throw "Bad function use";
     if (prefix > 0 && prefix < 33) return true;
-    return false;
+    throw "Out of bound prefix";
 }
 
 /**
@@ -236,7 +243,8 @@ function getIntrestingOctetIndexFromMask(mask) {
         else if (mask[i - 1] === "255" && mask[i] === "0") return i - 1;
         else if (mask[i] === "255" && i === 3) return 3;
     }
-    throw "didn't find intresting octet index";
+    // exception
+    throw "can't find intresting octet index";
 }
 
 /**
@@ -311,7 +319,8 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
         case 3:
             return 1 * blockSize - 2;
         default:
-            throw "index of octet cant be larger then 3";
+            // exception
+            throw "index of octet can't be larger then 3";
     }
 }
 
@@ -322,13 +331,12 @@ function hostsPerSubnet(intrestingOctetIndex, blockSize) {
  *
  * May requires extra refactoring ?
  * @param {string | number} prefix
+ * @requires prefixRangeValidty() (throws exception)
  * @returns {number} prefix
- * @throws ...
  */
 function decimalPrefix(prefix) {
     if (Number.isInteger(prefix)) {
         if (prefixRangeValidty(prefix)) return prefix;
-        else throw "Out of bound prefix";
     }
 
     // Not a integer then MUST be "/nb" or "nb"
@@ -337,7 +345,6 @@ function decimalPrefix(prefix) {
     prefix = parseInt(prefix);
 
     if (prefixRangeValidty(prefix)) return prefix;
-    else throw "Out of bound prefix";
 }
 
 /**
@@ -363,8 +370,8 @@ function prefixToMask(prefix, intrestingOctetIndex) {
             mask = ["255", "255", "255", "0"];
             break;
         default:
-            console.error("weird");
-            break;
+            // exception
+            throw "unexcpected intresting octet index value";
     }
 
     const mappingIndex = allPrefixes[intrestingOctetIndex].indexOf(prefix);
@@ -408,7 +415,7 @@ function extractPrefixAndMask(input) {
     // Mask
     if (input.length > 6) {
         // needs a new validity test function => all 1 bits on left
-        if (ipv4RangeValidity(input) !== true) throw "invalid values in mask";
+        ipv4RangeValidity(input);
 
         mask = toArrayAddress(input);
         intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
@@ -434,6 +441,7 @@ function extractPrefixAndMask(input) {
 function getClassOfIp(firstOctet) {
     firstOctet = parseInt(firstOctet);
 
+    // exception
     if (!octetRangeIsValid(firstOctet)) throw "invalide first octet";
 
     if (firstOctet >= 0 && firstOctet <= 127) return "class A";
@@ -464,7 +472,6 @@ function decimalToBinary(decimalOctet) {
 }
 
 /**
- *
  * @param {string} binaryOctet
  */
 function binaryToDecimal(binaryOctet) {
@@ -558,6 +565,8 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
  */
 function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     // empty in case the user inputed an address with 8,16,24 prefix!
+
+    // exception
     if (prefixedNeighbors.length === 0) throw "Input is empty";
 
     prefixedNeighbors.reverse();
@@ -637,6 +646,7 @@ function getClfIpData(ip) {
             mask = "255.255.255.0";
             break;
         default:
+            // exception
             throw "unexpected class of IP";
     }
 
@@ -733,11 +743,13 @@ function upperSubnetNeighbors(
     intrestingOctetIndex,
     targetPrefix
 ) {
-    if (targetPrefix == 8 || targetPrefix == 16 || targetPrefix == 24)
-        throw "class level subnet aren't handled here";
+    // exception
+    if ([8, 16, 24].includes(targetPrefix))
+        throw "This function doesn't locate neighbors inside /8, /16 or /24";
 
+    // exception
     if (mainSubnetMask[intrestingOctetIndex] == "255")
-        throw "This function doesn't locate Class level subnets neighbors";
+        throw "This function doesn't locate neighbors for Class level subnets";
 
     // Locate the larger subnet that wraps the Main Subnet
     const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
@@ -792,11 +804,13 @@ function getPrefixesNeighboringSubnets(
     mask,
     intrestingOctetIndex
 ) {
-    if (prefix == 8 || prefix == 16 || prefix == 24)
-        throw "class level subnet aren't handled here";
+    // exception
+    if ([8, 16, 24].includes(prefix))
+        throw "/8 /16 /24 can't be proceced for this function";
 
-    if (prefix == 1 || prefix == 9 || prefix == 17 || prefix == 25)
-        throw "Insupported prefix for getting upper subnets neighbors";
+    // exception
+    if ([1, 9, 17, 25].includes(prefix))
+        throw "/1 /9 /17 /25 will results in returning an empty set";
 
     const stopPrefix = Math.floor(prefix / 8) * 8;
     const prefixedNeighbors = [];
