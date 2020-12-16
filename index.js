@@ -13,13 +13,14 @@
  *
  * ADD:
  * - Warn user when he enters subnet or broadcast @ as unicast address
- * - Show the given IP inside the subnet
- * - function that check masks validity in binary
- * - Adopt OOP code || functional promesses
+ * - highligh the given IP inside the subnet
+ * - Adopt OOP code
  *
  * NOTE:
  * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
  * - Can add an array to map number of available hosts using prefix as index
+ *
+ * This code is owned by medilies and released under the GPL3 licence
  */
 
 // GLOBAL MAPPING ARRAYS. helps relating prefixes and subnetmasks
@@ -151,15 +152,19 @@ clsForm.addEventListener("submit", (e) => {
             `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
             upperPrefixNeighboringSubnetsTable;
     } catch (err) {
+        // thrown from main scope
         if (err.includes("There is no specs to analyse about the /"))
             console.warn(err);
         else if (err === "No class level neighbors to show") console.warn(err);
         else if (err === "No prfix level neighbors to show") console.warn(err);
+        // thrown from functions
         else if (
             err.includes("It may include an octet with value out of the range")
         )
             console.warn(err);
         else if (err === "Out of bound prefix") console.warn(err);
+        else if (err.includes("invalid mask ")) console.warn(err);
+        // *
         else console.error(err);
     }
 });
@@ -210,15 +215,28 @@ function ipv4RangeValidity(address) {
     if (!Array.isArray(address)) address = toArrayAddress(address);
 
     if (
-        octetRangeIsValid(address[0]) &&
-        octetRangeIsValid(address[1]) &&
-        octetRangeIsValid(address[2]) &&
-        octetRangeIsValid(address[3]) &&
-        address.length === 4
+        !octetRangeIsValid(address[0]) ||
+        !octetRangeIsValid(address[1]) ||
+        !octetRangeIsValid(address[2]) ||
+        !octetRangeIsValid(address[3]) ||
+        address.length !== 4
     )
-        return true;
-    else
         throw `The address ${address} is invalid! It may include an octet with value out of the range [0-255], or not be formed of exactly 4 octets`;
+}
+
+/**
+ * @param {string[]} mask
+ * @throw invalid mask
+ */
+function ipv4MaskValidity(mask) {
+    if (!Array.isArray(mask)) mask = toArrayAddress(mask);
+
+    if (mask.length !== 4) throw `invalid mask ${mask}`;
+
+    mask.forEach((octet) => {
+        if (!maskDecimals.includes(parseInt(octet)))
+            throw `invalid mask ${mask}`;
+    });
 }
 
 /**
@@ -414,8 +432,7 @@ function extractPrefixAndMask(input) {
 
     // Mask
     if (input.length > 6) {
-        // needs a new validity test function => all 1 bits on left
-        ipv4RangeValidity(input);
+        ipv4MaskValidity(input);
 
         mask = toArrayAddress(input);
         intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
