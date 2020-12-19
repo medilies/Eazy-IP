@@ -51,6 +51,11 @@ const clsUpperPrefixesDiv = document.querySelector(
     "#js-cls-upper-prefixes-neighbors"
 );
 
+const vlsmForm = document.querySelector("#js-vlsm");
+const vlsmSubnet = document.querySelector("#js-vlsm-network");
+const vlsmInputs = document.querySelector("#js-vlsm-inputs");
+const vlsmTemplateInput = document.querySelector("#vlsm-ref-input");
+
 // Highligh the IP in the its subnet map
 // Highlight the subnet next its neighbors
 // warn the user if he gave a network or broadcast address that is cant be used for host
@@ -158,16 +163,32 @@ clsForm.addEventListener("submit", (e) => {
         else if (err === "No class level neighbors to show") console.warn(err);
         else if (err === "No prfix level neighbors to show") console.warn(err);
         // thrown from functions
-        else if (
-            err.includes("It may include an octet with value out of the range")
-        )
+        else if (err.includes("It may include an out of range [0-255] octet"))
             console.warn(err);
         else if (err === "Out of bound prefix") console.warn(err);
         else if (err.includes("invalid mask ")) console.warn(err);
         // *
-        else console.error(err);
+        else console.error(`internal error: ${err}`);
     }
 });
+
+vlsmForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const subnetSizes = document.querySelectorAll(".js-vlsm-subnets");
+    const subnetNames = document.querySelectorAll(".js-vlsm-names");
+
+    console.log(subnetSizes);
+
+    subnetSizes.forEach((net) => {
+        console.log(net.value);
+    });
+
+    subnetNames.forEach((net) => {
+        console.log(net.value);
+    });
+});
+
+vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
 
 function warnReservedNetwork() {
     // ...
@@ -221,7 +242,7 @@ function ipv4RangeValidity(address) {
         !octetRangeIsValid(address[3]) ||
         address.length !== 4
     )
-        throw `The address ${address} is invalid! It may include an octet with value out of the range [0-255], or not be formed of exactly 4 octets`;
+        throw `The address ${address} is invalid! It may include an out of range [0-255] octet's value, or not be formed of exactly 4 octets`;
 }
 
 /**
@@ -626,6 +647,27 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     return table;
 }
 
+// function vlsmLittleDiv() {
+//     const wrapperDiv = document.createElement("div");
+//     const input = document.createElement("input");
+//     const add = document.createElement("span");
+//     const remove = document.createElement("span");
+
+//     input.type = "text";
+//     input.className = "js-vlsm-subnets";
+
+//     add.textContent = "+";
+//     add.className = "add-subnet clickables";
+
+//     remove.textContent = "x";
+//     remove.className = "remove-subnet clickables";
+
+//     wrapperDiv.appendChild(input);
+//     wrapperDiv.appendChild(add);
+//     wrapperDiv.appendChild(remove);
+//     return wrapperDiv;
+// }
+
 //*******************************************************
 // CASE SPECIFIC FUNCTIONS (called once)
 //*******************************************************
@@ -843,4 +885,20 @@ function getPrefixesNeighboringSubnets(
     }
 
     return prefixedNeighbors;
+}
+
+function vlsmAddRemoveCallback(e) {
+    e.preventDefault();
+
+    if (
+        e.target.classList.contains("add-subnet") ||
+        e.target.classList.contains("remove-subnet")
+    ) {
+        if (e.target.classList.contains("add-subnet")) {
+            console.log(e.target.parentElement);
+            vlsmInputs.appendChild(vlsmTemplateInput.cloneNode(true));
+        } else if (e.target.classList.contains("remove-subnet")) {
+            e.target.parentElement.remove();
+        }
+    }
 }

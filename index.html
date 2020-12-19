@@ -3,30 +3,18 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="css/index.css" />
         <!-- <link rel="icon" href="favicon.ico" /> -->
         <title>Eazy IP</title>
-        <style>
-            body {
-                background-color: #aaa;
-            }
-            table {
-                border-collapse: collapse;
-            }
-            td,
-            th {
-                border: 1px #888 solid;
-                padding: 0.3rem;
-            }
-        </style>
     </head>
     <body>
         <main>
             <div id="JS-print"></div>
 
-            <h1>Classful</h1>
+            <h1>Classful address</h1>
             <p>Collect the network's info of the given unicast address</p>
             <form id="js-clf-addressing">
-                <label>Classful IP address</label>
+                <label>Classful IPv4 address</label>
                 <input
                     type="text"
                     id="js-clf-address"
@@ -37,10 +25,10 @@
             </form>
             <div id="js-clf-info"></div>
 
-            <h1>Classless</h1>
+            <h1>Classless address</h1>
             <p>Collect the subnets' info of the given unicast address</p>
             <form id="js-cls-addressing">
-                <label>classless IP address</label>
+                <label>classless IPv4 address</label>
                 <input
                     type="text"
                     id="js-cls-address"
@@ -62,10 +50,74 @@
             <div id="js-cls-neighbors-info"></div>
             <div id="js-cls-upper-prefixes-neighbors"></div>
 
+            <h1>VLSM</h1>
+            <p></p>
+
+            <form id="js-vlsm">
+                <label>Address of the netwrok to subnet in CIDR notation</label>
+                <input
+                    type="text"
+                    id="js-vlsm-network"
+                    placeholder="example 10.0.0.0/25"
+                    value="10.0.0.0/25"
+                /><br />
+
+                <label>Subnets hosts (nubmer of hosts per subnet):</label><br />
+
+                <div id="js-vlsm-inputs">
+                    <div>
+                        <input
+                            type="text"
+                            class="js-vlsm-names"
+                            value="(nameless)"
+                        />
+                        <input
+                            type="text"
+                            class="js-vlsm-subnets"
+                            placeholder="5"
+                            value="5"
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="text"
+                            class="js-vlsm-names"
+                            value="(nameless)"
+                        />
+                        <input
+                            type="text"
+                            class="js-vlsm-subnets"
+                            placeholder="13"
+                            value="13"
+                        />
+                        <span class="add-subnet clickables">+</span>
+                    </div>
+                    <div id="vlsm-ref-input">
+                        <input
+                            type="text"
+                            class="js-vlsm-names"
+                            value="(nameless)"
+                        />
+                        <input
+                            type="text"
+                            class="js-vlsm-subnets"
+                            placeholder="19"
+                            value="19"
+                        />
+                        <span class="add-subnet clickables">+</span>
+                        <span class="remove-subnet clickables">x</span>
+                    </div>
+                </div>
+
+                <button type="submit">Get results</button>
+            </form>
+
             <h1>Subnet an available network</h1>
+
             <h1>Summerize subnets (supernetting)</h1>
         </main>
 
-        <script src="index.js"></script>
+        <script src="./js/index.js"></script>
+        <!-- <script src="./js/test.js"></script> -->
     </body>
 </html>
