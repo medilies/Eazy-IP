@@ -15,6 +15,7 @@
  * - Warn user when he enters subnet or broadcast @ as unicast address
  * - highligh the given IP inside the subnet
  * - Adopt OOP code
+ * - VLSM net@ needs a validation function
  *
  * NOTE:
  * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
@@ -181,7 +182,7 @@ vlsmForm.addEventListener("submit", (e) => {
     mainSubnet.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(
         mainSubnet.prefix
     );
-    mainSubnet.mask = prefixToMask(
+    mainSubnet.mask = prefix2mask(
         mainSubnet.prefix,
         mainSubnet.intrestingOctetIndex
     );
@@ -194,15 +195,19 @@ vlsmForm.addEventListener("submit", (e) => {
     for (let i = 0; i < subnetSizes.length; i++) {
         vlsmChuncks.push({
             subnetName: subnetNames[i].value,
-            subnetHosts: subnetSizes[i].value,
+            subnetHosts: parseInt(subnetSizes[i].value),
+            subnetOccupation: parseInt(subnetSizes[i].value) + 2,
         });
     }
 
     const neededSize = vlsmChuncks.reduce((acc, curr) => {
         // add broadcast & subnet @
-        acc += parseInt(curr.subnetHosts) + 2;
+        acc += parseInt(curr.subnetSize);
         return acc;
     }, 0);
+
+    if (neededSize > mainSubnet.size)
+        console.error("Main subnet capacity exceeded");
 
     // maybe sort and give the user a sorting choice
     vlsmChuncks.sort((a, b) => {
@@ -215,31 +220,23 @@ vlsmForm.addEventListener("submit", (e) => {
         }
     });
 
-    console.table(neededSize);
+    const addrPlaceHolder = [...mainSubnet.subnetAddr];
+
+    vlsmChuncks.forEach((net) => {
+        net.prefix = prefixFromSize(net.subnetOccupation);
+        net.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(net.prefix);
+        net.mask = prefix2mask(net.prefix, net.intrestingOctetIndex);
+        net.blockSize = blockSizeFromPrefix(net.prefix);
+        net.subnetAddr = [...addrPlaceHolder];
+
+        nextSubnetAddr(addrPlaceHolder, net.blockSize);
+    });
+
     console.table(mainSubnet);
     console.table(vlsmChuncks);
-
-    // TEST RANGE
-    // START LOOPING
 });
 
 vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
-
-/**
- *
- * @param {string} cidr "nb.nb.nb.nb/nb"
- * @requires toArrayAddress
- * @requires decimalPrefix
- * @throw wrong CIDR notation
- */
-function cidrToSubnetAndPrefix(cidr) {
-    if (cidr.includes("/")) cidr = cidr.split("/");
-    else throw "Cidr notation must include / character";
-
-    const subnetAddress = toArrayAddress(cidr[0]);
-    const prefix = decimalPrefix(cidr[1]);
-    return { subnetAddress, prefix };
-}
 
 function warnReservedNetwork() {
     // ...
@@ -458,7 +455,7 @@ function decimalPrefix(prefix) {
  * @param {number} prefix
  * @param {number} intrestingOctetIndex
  */
-function prefixToMask(prefix, intrestingOctetIndex) {
+function prefix2mask(prefix, intrestingOctetIndex) {
     let mask;
 
     // preset the mask
@@ -493,7 +490,7 @@ function prefixToMask(prefix, intrestingOctetIndex) {
  * @param {array} mask
  * @param {number} intrestingOctetIndex  gives index of the subneted octet [0|1|2|3]
  */
-function maskToPrefix(mask, intrestingOctetIndex) {
+function mask2prefix(mask, intrestingOctetIndex) {
     const mappingIndex = maskDecimals.indexOf(
         parseInt(mask[intrestingOctetIndex])
     );
@@ -503,18 +500,14 @@ function maskToPrefix(mask, intrestingOctetIndex) {
     return prefix;
 }
 
-function prefixFromBlockSize(blockSize) {
-    let power;
-}
-
 /**
  * Returns **VALID** mask & prefix
  * used when form input allows user to enter one option. PREFIX or MASK, and futur operations requires both
  * @param {string} input
  * @requires ipv4RangeValidity()
  * @requires getIntrestingOctetIndexFromMask()
- * @requires maskToPrefix()
- * @requires prefixToMask()
+ * @requires mask2prefix()
+ * @requires prefix2mask()
  * @throws "invalid values in mask"
  */
 function extractPrefixAndMask(input) {
@@ -528,13 +521,13 @@ function extractPrefixAndMask(input) {
 
         mask = toArrayAddress(input);
         intrestingOctetIndex = getIntrestingOctetIndexFromMask(mask);
-        prefix = maskToPrefix(mask, intrestingOctetIndex);
+        prefix = mask2prefix(mask, intrestingOctetIndex);
     }
     // Prefix
     else if (input.length < 4) {
         prefix = decimalPrefix(input);
         intrestingOctetIndex = getIntrestingOctetIndexFromPreix(prefix);
-        mask = prefixToMask(prefix, intrestingOctetIndex);
+        mask = prefix2mask(prefix, intrestingOctetIndex);
     }
     // exception
     else throw "unexpected input length while extracting mask & prefix";
@@ -560,37 +553,60 @@ function getClassOfIp(firstOctet) {
     if (firstOctet >= 240 && firstOctet <= 255) return "class E";
 }
 
-// UNUSED:
-
 /**
- * octet can be int or string between 0 & 255
- * Returns a binary octet in string format
+ * From w3c JS docs
+ * @param {string} dec
  */
-function decimalToBinary(decimalOctet) {
-    decimalOctet = parseInt(decimalOctet);
-    if (!octetRangeIsValid(decimalOctet)) console.error("invalide octet");
-
-    let bin = "";
-    let rest;
-    for (let i = 0; i < 8; i++) {
-        rest = decimalOctet % 2;
-        decimalOctet = parseInt(decimalOctet / 2);
-        bin = rest + bin;
-    }
-    return bin;
+function dec2bin(dec) {
+    return (dec >>> 0).toString(2);
 }
 
 /**
- * @param {string} binaryOctet
+ * From w3c JS docs
+ * @param {string} bin
  */
-function binaryToDecimal(binaryOctet) {
-    let decimal = 0;
-    let power = 7;
-    for (let i = 0; i < 8; i++) {
-        if (binaryOctet[i] === "1") decimal += Math.pow(2, power);
-        power--;
+function bin2dec(bin) {
+    return parseInt(bin, 2).toString(10);
+}
+
+/**
+ *
+ * @param {string | number} a
+ * @param {string | number} b
+ */
+function addBin(a, b) {
+    let sum = parseInt(a) + parseInt(b);
+    return (sum >>> 0).toString(2);
+}
+
+/**
+ * @param {number} size
+ */
+function prefixFromSize(size) {
+    let hostsBits;
+    for (let i = 0; i < 32; i++) {
+        if (Math.pow(2, i) >= size) {
+            hostsBits = i;
+            break;
+        }
     }
-    return decimal;
+    return 32 - hostsBits;
+}
+
+/**
+ *
+ * @param {string} cidr "nb.nb.nb.nb/nb"
+ * @requires toArrayAddress
+ * @requires decimalPrefix
+ * @throw wrong CIDR notation
+ */
+function cidrToSubnetAndPrefix(cidr) {
+    if (cidr.includes("/")) cidr = cidr.split("/");
+    else throw "Cidr notation must include / character";
+
+    const subnetAddr = toArrayAddress(cidr[0]);
+    const prefix = decimalPrefix(cidr[1]);
+    return { subnetAddr, prefix };
 }
 
 //*******************************************************
@@ -842,7 +858,7 @@ function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
  * @param {string[]} mainSubnetMask
  * @param {number} intrestingOctetIndex
  * @param {number} targetPrefix values can be: **[1-7][9-15][17-23][25-30]**
- * @requires prefixToMask()
+ * @requires prefix2mask()
  * @requires blockSizeFromMask()
  * @throws classful problems
  */
@@ -861,7 +877,7 @@ function upperSubnetNeighbors(
         throw "This function doesn't locate neighbors for Class level subnets";
 
     // Locate the larger subnet that wraps the Main Subnet
-    const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
+    const targetMask = prefix2mask(targetPrefix, intrestingOctetIndex);
     const targetBlockSize = blockSizeFromMask(targetMask, intrestingOctetIndex);
     const parentSubnetIndex = Math.floor(
         mainSubnet[intrestingOctetIndex] / targetBlockSize
@@ -945,4 +961,62 @@ function vlsmAddRemoveCallback(e) {
     } else if (e.target.classList.contains("remove-subnet")) {
         e.target.parentElement.remove();
     }
+}
+
+/**
+ * **STEPS**
+ * - get current subnet address
+ * - tranform current subnet address from DEC2BIN
+ * - - add padding 0s for each octet if it isn't 8 bits long
+ * - format current subnet address from array to string
+ * - add current block size to current subnet address : gets next next subnet address
+ * - add padding 0 bits if it isn't 32 bits long
+ * - format next subnet address from string to array
+ * - tranform next subnet address from BIN2DEC
+ * @param {string[]} subnetAddr passed by reference
+ * @param {number} blockSize
+ */
+function nextSubnetAddr(subnetAddr, blockSize) {
+    // write octets in binary
+    subnetAddr.forEach((octet, i) => {
+        octet = dec2bin(octet);
+
+        // left padding 0 bits
+        if (octet.length < 8) {
+            const breakOut = 8 - octet.length;
+            for (let i = 0; i < breakOut; i++) {
+                octet = "0" + octet;
+            }
+        }
+
+        subnetAddr[i] = octet;
+    });
+
+    // fuse the octets: 32 chars string
+    const binSubnetAddr = subnetAddr.join("");
+
+    // addition
+    let nextSubentAddr = addBin(bin2dec(binSubnetAddr), blockSize);
+
+    // left padding 0 bits
+    if (nextSubentAddr.length < 32) {
+        const breakOut = 32 - nextSubentAddr.length;
+        for (let i = 0; i < breakOut; i++) {
+            nextSubentAddr = "0" + nextSubentAddr;
+        }
+    }
+
+    // spliting the binary string
+    subnetAddr[0] = nextSubentAddr.substr(-32, 8);
+    subnetAddr[1] = nextSubentAddr.substr(-24, 8);
+    subnetAddr[2] = nextSubentAddr.substr(-16, 8);
+    subnetAddr[3] = nextSubentAddr.substr(-8, 8);
+
+    // transforming the binary octets to decimal
+    subnetAddr.forEach((octet, i) => {
+        octet = bin2dec(octet);
+        subnetAddr[i] = octet;
+    });
+
+    // the end result is passed by reference
 }
