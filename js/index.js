@@ -177,63 +177,23 @@ vlsmForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const cidrInput = vlsmSubnet.value.toString();
 
-    const mainSubnet = cidrToSubnetAndPrefix(cidrInput);
-    // refuse /30 /31 /32
-    mainSubnet.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(
-        mainSubnet.prefix
-    );
-    mainSubnet.mask = prefix2mask(
-        mainSubnet.prefix,
-        mainSubnet.intrestingOctetIndex
-    );
-    mainSubnet.size = blockSizeFromPrefix(mainSubnet.prefix);
-
-    const subnetSizes = document.querySelectorAll(".js-vlsm-subnets");
-    const subnetNames = document.querySelectorAll(".js-vlsm-names");
-
-    const vlsmChuncks = [];
-    for (let i = 0; i < subnetSizes.length; i++) {
-        vlsmChuncks.push({
-            subnetName: subnetNames[i].value,
-            subnetHosts: parseInt(subnetSizes[i].value),
-            subnetOccupation: parseInt(subnetSizes[i].value) + 2,
-        });
-    }
+    const mainSubnet = mainSubnetData(cidrInput);
+    const vlsmChuncks = vlsmChunksData([...mainSubnet.subnetAddr]);
 
     const neededSize = vlsmChuncks.reduce((acc, curr) => {
-        // add broadcast & subnet @
-        acc += parseInt(curr.subnetSize);
-        return acc;
+        return (acc += parseInt(curr.blockSize));
     }, 0);
-
-    if (neededSize > mainSubnet.size)
-        console.error("Main subnet capacity exceeded");
-
-    // maybe sort and give the user a sorting choice
-    vlsmChuncks.sort((a, b) => {
-        if (parseInt(a.subnetHosts) > parseInt(b.subnetHosts)) {
-            return -1;
-        } else if (parseInt(a.subnetHosts) < parseInt(b.subnetHosts)) {
-            return +1;
-        } else {
-            return 0;
-        }
-    });
-
-    const addrPlaceHolder = [...mainSubnet.subnetAddr];
-
-    vlsmChuncks.forEach((net) => {
-        net.prefix = prefixFromSize(net.subnetOccupation);
-        net.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(net.prefix);
-        net.mask = prefix2mask(net.prefix, net.intrestingOctetIndex);
-        net.blockSize = blockSizeFromPrefix(net.prefix);
-        net.subnetAddr = [...addrPlaceHolder];
-
-        nextSubnetAddr(addrPlaceHolder, net.blockSize);
-    });
 
     console.table(mainSubnet);
     console.table(vlsmChuncks);
+    console.table(neededSize);
+
+    if (neededSize > mainSubnet.size)
+        console.error(
+            `Main subnet capacity exceeded with ${
+                neededSize - mainSubnet.size
+            } addresses`
+        );
 });
 
 vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
@@ -961,6 +921,79 @@ function vlsmAddRemoveCallback(e) {
     } else if (e.target.classList.contains("remove-subnet")) {
         e.target.parentElement.remove();
     }
+}
+
+/**
+ *
+ * @param {string} cidrAddr
+ */
+function mainSubnetData(cidrAddr) {
+    const mainSubnet = cidrToSubnetAndPrefix(cidrAddr);
+    // refuse /30 /31 /32
+    mainSubnet.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(
+        mainSubnet.prefix
+    );
+    mainSubnet.mask = prefix2mask(
+        mainSubnet.prefix,
+        mainSubnet.intrestingOctetIndex
+    );
+    mainSubnet.size = blockSizeFromPrefix(mainSubnet.prefix);
+
+    return mainSubnet;
+}
+
+/**
+ * Gets full data for all the chunks / Does **SORTING**
+ * @param {string[]} startAddr main Subnet Address
+ */
+function vlsmChunksData(startAddr) {
+    const subnetSizes = document.querySelectorAll(".js-vlsm-subnets");
+    const subnetNames = document.querySelectorAll(".js-vlsm-names");
+
+    const vlsmChuncks = [];
+    for (let i = 0; i < subnetSizes.length; i++) {
+        vlsmChuncks.push({
+            subnetName: subnetNames[i].value,
+            subnetHosts: parseInt(subnetSizes[i].value),
+            subnetOccupation: parseInt(subnetSizes[i].value) + 2,
+        });
+    }
+
+    // maybe give the user a sorting choice
+    vlsmChuncks.sort((a, b) => {
+        if (parseInt(a.subnetHosts) > parseInt(b.subnetHosts)) {
+            return -1;
+        } else if (parseInt(a.subnetHosts) < parseInt(b.subnetHosts)) {
+            return +1;
+        } else {
+            return 0;
+        }
+    });
+
+    vlsmChuncks.forEach((net) => {
+        net.prefix = prefixFromSize(net.subnetOccupation);
+        net.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(net.prefix);
+        net.mask = prefix2mask(net.prefix, net.intrestingOctetIndex);
+        net.blockSize = blockSizeFromPrefix(net.prefix);
+        net.freeSpace = net.blockSize - net.subnetOccupation;
+    });
+
+    // startAddr looses its meanning in first itaration here
+    vlsmChuncks.forEach((net) => {
+        net.subnetAddr = [...startAddr];
+        nextSubnetAddr(startAddr, net.blockSize);
+    });
+
+    vlsmChuncks.forEach((net) => {
+        [
+            undefined,
+            net.firstHost,
+            net.lastHost,
+            net.subnetBroadcastIp,
+        ] = subnetMapping(net.subnetAddr, net.mask, net.intrestingOctetIndex);
+    });
+
+    return vlsmChuncks;
 }
 
 /**
