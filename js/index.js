@@ -174,21 +174,72 @@ clsForm.addEventListener("submit", (e) => {
 
 vlsmForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    const cidrInput = vlsmSubnet.value.toString();
+
+    const mainSubnet = cidrToSubnetAndPrefix(cidrInput);
+    // refuse /30 /31 /32
+    mainSubnet.intrestingOctetIndex = getIntrestingOctetIndexFromPreix(
+        mainSubnet.prefix
+    );
+    mainSubnet.mask = prefixToMask(
+        mainSubnet.prefix,
+        mainSubnet.intrestingOctetIndex
+    );
+    mainSubnet.size = blockSizeFromPrefix(mainSubnet.prefix);
+
     const subnetSizes = document.querySelectorAll(".js-vlsm-subnets");
     const subnetNames = document.querySelectorAll(".js-vlsm-names");
 
-    console.log(subnetSizes);
+    const vlsmChuncks = [];
+    for (let i = 0; i < subnetSizes.length; i++) {
+        vlsmChuncks.push({
+            subnetName: subnetNames[i].value,
+            subnetHosts: subnetSizes[i].value,
+        });
+    }
 
-    subnetSizes.forEach((net) => {
-        console.log(net.value);
+    const neededSize = vlsmChuncks.reduce((acc, curr) => {
+        // add broadcast & subnet @
+        acc += parseInt(curr.subnetHosts) + 2;
+        return acc;
+    }, 0);
+
+    // maybe sort and give the user a sorting choice
+    vlsmChuncks.sort((a, b) => {
+        if (parseInt(a.subnetHosts) > parseInt(b.subnetHosts)) {
+            return -1;
+        } else if (parseInt(a.subnetHosts) < parseInt(b.subnetHosts)) {
+            return +1;
+        } else {
+            return 0;
+        }
     });
 
-    subnetNames.forEach((net) => {
-        console.log(net.value);
-    });
+    console.table(neededSize);
+    console.table(mainSubnet);
+    console.table(vlsmChuncks);
+
+    // TEST RANGE
+    // START LOOPING
 });
 
 vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
+
+/**
+ *
+ * @param {string} cidr "nb.nb.nb.nb/nb"
+ * @requires toArrayAddress
+ * @requires decimalPrefix
+ * @throw wrong CIDR notation
+ */
+function cidrToSubnetAndPrefix(cidr) {
+    if (cidr.includes("/")) cidr = cidr.split("/");
+    else throw "Cidr notation must include / character";
+
+    const subnetAddress = toArrayAddress(cidr[0]);
+    const prefix = decimalPrefix(cidr[1]);
+    return { subnetAddress, prefix };
+}
 
 function warnReservedNetwork() {
     // ...
@@ -287,14 +338,30 @@ function getIntrestingOctetIndexFromMask(mask) {
 }
 
 /**
+ * @param {number} prefix
+ */
+function getIntrestingOctetIndexFromPreix(prefix) {
+    return parseInt((prefix - 1) / 8);
+}
+
+/**
  * **NOTE:** /8 /16 /24 /32 masks results in **blocksize === 1** because 256 - 255 = 1
  *
  * **=>** this behaviour is being exploited!
+ *
+ * needs to be replaced
  * @param {array} mask
  * @param {number} intrestingOctetIndex
  */
-function getBlockSize(mask, intrestingOctetIndex) {
+function blockSizeFromMask(mask, intrestingOctetIndex) {
     return 256 - mask[intrestingOctetIndex];
+}
+
+/**
+ * @param {number} prefix
+ */
+function blockSizeFromPrefix(prefix) {
+    return Math.pow(2, 32 - prefix);
 }
 
 /**
@@ -307,7 +374,7 @@ function getBlockSize(mask, intrestingOctetIndex) {
  * @returns {string[] | number}
  */
 function subnetMapping(ip, mask, intrestingOctetIndex) {
-    const blockSize = getBlockSize(mask, intrestingOctetIndex);
+    const blockSize = blockSizeFromMask(mask, intrestingOctetIndex);
 
     const subnetIndex = parseInt(ip[intrestingOctetIndex] / blockSize);
 
@@ -436,6 +503,10 @@ function maskToPrefix(mask, intrestingOctetIndex) {
     return prefix;
 }
 
+function prefixFromBlockSize(blockSize) {
+    let power;
+}
+
 /**
  * Returns **VALID** mask & prefix
  * used when form input allows user to enter one option. PREFIX or MASK, and futur operations requires both
@@ -462,7 +533,7 @@ function extractPrefixAndMask(input) {
     // Prefix
     else if (input.length < 4) {
         prefix = decimalPrefix(input);
-        intrestingOctetIndex = parseInt((prefix - 1) / 8);
+        intrestingOctetIndex = getIntrestingOctetIndexFromPreix(prefix);
         mask = prefixToMask(prefix, intrestingOctetIndex);
     }
     // exception
@@ -647,27 +718,6 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     return table;
 }
 
-// function vlsmLittleDiv() {
-//     const wrapperDiv = document.createElement("div");
-//     const input = document.createElement("input");
-//     const add = document.createElement("span");
-//     const remove = document.createElement("span");
-
-//     input.type = "text";
-//     input.className = "js-vlsm-subnets";
-
-//     add.textContent = "+";
-//     add.className = "add-subnet clickables";
-
-//     remove.textContent = "x";
-//     remove.className = "remove-subnet clickables";
-
-//     wrapperDiv.appendChild(input);
-//     wrapperDiv.appendChild(add);
-//     wrapperDiv.appendChild(remove);
-//     return wrapperDiv;
-// }
-
 //*******************************************************
 // CASE SPECIFIC FUNCTIONS (called once)
 //*******************************************************
@@ -759,7 +809,7 @@ function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
     if (mask[intrestingOctetIndex] == "255")
         return "Main subnet is a class level subnet";
 
-    const blockSize = getBlockSize(mask, intrestingOctetIndex);
+    const blockSize = blockSizeFromMask(mask, intrestingOctetIndex);
     const currentSubnet = mainSubnet;
     const subnets = [];
 
@@ -793,7 +843,7 @@ function getClassNeighboringSubnets(mainSubnet, mask, intrestingOctetIndex) {
  * @param {number} intrestingOctetIndex
  * @param {number} targetPrefix values can be: **[1-7][9-15][17-23][25-30]**
  * @requires prefixToMask()
- * @requires getBlockSize()
+ * @requires blockSizeFromMask()
  * @throws classful problems
  */
 function upperSubnetNeighbors(
@@ -812,13 +862,13 @@ function upperSubnetNeighbors(
 
     // Locate the larger subnet that wraps the Main Subnet
     const targetMask = prefixToMask(targetPrefix, intrestingOctetIndex);
-    const targetBlockSize = getBlockSize(targetMask, intrestingOctetIndex);
+    const targetBlockSize = blockSizeFromMask(targetMask, intrestingOctetIndex);
     const parentSubnetIndex = Math.floor(
         mainSubnet[intrestingOctetIndex] / targetBlockSize
     );
 
     // set Main Subnet blocksize to iterate with through neighbors
-    const iterativeBlockSize = getBlockSize(
+    const iterativeBlockSize = blockSizeFromMask(
         mainSubnetMask,
         intrestingOctetIndex
     );
@@ -890,15 +940,9 @@ function getPrefixesNeighboringSubnets(
 function vlsmAddRemoveCallback(e) {
     e.preventDefault();
 
-    if (
-        e.target.classList.contains("add-subnet") ||
-        e.target.classList.contains("remove-subnet")
-    ) {
-        if (e.target.classList.contains("add-subnet")) {
-            console.log(e.target.parentElement);
-            vlsmInputs.appendChild(vlsmTemplateInput.cloneNode(true));
-        } else if (e.target.classList.contains("remove-subnet")) {
-            e.target.parentElement.remove();
-        }
+    if (e.target.classList.contains("add-subnet")) {
+        vlsmInputs.appendChild(vlsmTemplateInput.cloneNode(true));
+    } else if (e.target.classList.contains("remove-subnet")) {
+        e.target.parentElement.remove();
     }
 }
