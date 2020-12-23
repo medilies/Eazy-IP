@@ -17,10 +17,9 @@
  * - Warn user when he enters subnet or broadcast @ as unicast address
  * - highligh the given IP inside the subnet
  * - Adopt OOP code
+ * - warn the user if he gave a network or broadcast address that is cant be used for host
+ * - save VLSM option
  *
- * NOTE:
- * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
- * - Can add an array to map number of available hosts using prefix as index
  *
  * This code is owned by medilies and released under the GPL3 licence
  */
@@ -57,10 +56,7 @@ const vlsmForm = document.querySelector("#js-vlsm");
 const vlsmSubnet = document.querySelector("#js-vlsm-network");
 const vlsmInputs = document.querySelector("#js-vlsm-inputs");
 const vlsmTemplateInput = document.querySelector("#vlsm-ref-input");
-
-// Highligh the IP in the its subnet map
-// Highlight the subnet next its neighbors
-// warn the user if he gave a network or broadcast address that is cant be used for host
+const vlsmChunksDiv = document.querySelector("#js-vlsm-chunks");
 
 //*******************************************************
 // FORMS SUBMISSION HANDLERS
@@ -86,9 +82,7 @@ clsForm.addEventListener("submit", (e) => {
     clsClassLvlNeighborsDiv.innerHTML = "";
     clsUpperPrefixesDiv.innerHTML = "";
 
-    // will this make tracing error hard ?
     let ip = clsIp.value.toString();
-    // >>>>>>>>>>>>>>>>>>>input needs to be formated as array
     let input = clsPrefixOrMask.value.toString();
 
     try {
@@ -158,6 +152,7 @@ clsForm.addEventListener("submit", (e) => {
         clsUpperPrefixesDiv.innerHTML =
             `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
             upperPrefixNeighboringSubnetsTable;
+        //*
     } catch (err) {
         // thrown from main scope
         if (err.includes("There is no specs to analyse about the /"))
@@ -177,38 +172,53 @@ clsForm.addEventListener("submit", (e) => {
 vlsmForm.addEventListener("submit", (e) => {
     e.preventDefault();
 
-    const vlsmChunksDiv = document.querySelector("#js-vlsm-chunks");
     const cidrInput = vlsmSubnet.value.toString();
 
-    const mainSubnet = mainSubnetData(cidrInput);
-    // refuse /32,31,30 prefixes
+    try {
+        const mainSubnet = mainSubnetData(cidrInput);
 
-    netAddrValidty(
-        mainSubnet.subnetAddr,
-        mainSubnet.intrestOctInd,
-        blockSizeFromMask(mainSubnet.mask, mainSubnet.intrestOctInd),
-        mainSubnet.prefix
-    );
+        if ([32, 31, 30].includes(mainSubnet.prefix)) throw "anti-vlsm prefix";
 
-    const vlsmChuncks = vlsmChunksData([...mainSubnet.subnetAddr]);
-
-    const neededSize = vlsmChuncks.reduce((acc, curr) => {
-        return (acc += parseInt(curr.blockSize));
-    }, 0);
-
-    const vlsmChunksTable = vlsmChunksTableGen(vlsmChuncks, mainSubnet.size);
-    vlsmChunksDiv.innerHTML = vlsmChunksTable;
-
-    console.table(mainSubnet);
-    console.table(vlsmChuncks);
-    console.table(neededSize);
-
-    if (neededSize > mainSubnet.size)
-        console.error(
-            `Main subnet capacity exceeded with ${
-                neededSize - mainSubnet.size
-            } addresses`
+        netAddrValidty(
+            mainSubnet.subnetAddr,
+            mainSubnet.intrestOctInd,
+            blockSizeFromMask(mainSubnet.mask, mainSubnet.intrestOctInd),
+            mainSubnet.prefix
         );
+
+        const vlsmChuncks = vlsmChunksData([...mainSubnet.subnetAddr]);
+
+        const neededSize = vlsmChuncks.reduce((acc, curr) => {
+            return (acc += parseInt(curr.blockSize));
+        }, 0);
+
+        const vlsmChunksTable = vlsmChunksTableGen(
+            vlsmChuncks,
+            mainSubnet.size
+        );
+        vlsmChunksDiv.innerHTML = vlsmChunksTable;
+
+        // notice
+        if (neededSize > mainSubnet.size)
+            throw `Main subnet capacity exceeded with ${
+                neededSize - mainSubnet.size
+            } addresses`;
+        //*
+    } catch (err) {
+        // thrown from main scope
+        if (err.includes("anti-vlsm prefix")) console.warn(err);
+        else if (err.includes("Main subnet capacity exceeded with "))
+            console.warn(err);
+        // thrown from functions
+        else if (err.includes("Cidr notation must include /"))
+            console.warn(err);
+        else if (err.includes("It may include an out of range [0-255] octet"))
+            console.warn(err);
+        else if (err === "Out of bound prefix") console.warn(err);
+        else if (err.includes("Invalide network address")) console.warn(err);
+        //*
+        else console.error(err);
+    }
 });
 
 vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
@@ -298,8 +308,8 @@ function prefixRangeValidty(prefix) {
 /**
  * @param {string[]} ip
  * @param {number} intrestOctInd
- * @param {number} blockSize
- * @throws Invalidte network address
+ * @param {number} blockSize **THE ONE OBTAINED FROM MASK**
+ * @throws Invalide network address
  */
 function netAddrValidty(ip, intrestOctInd, blockSize, prefix) {
     if (ip[intrestOctInd] % blockSize !== 0)
@@ -584,11 +594,13 @@ function prefixFromSize(size) {
 }
 
 /**
- *
+ * Returns **VALID** network address + prefix
  * @param {string} cidr "nb.nb.nb.nb/nb"
  * @requires toArrayAddress
  * @requires decimalPrefix
- * @throw wrong CIDR notation
+ * @requires ipv4RangeValidity throw error
+ * @requires prefixRangeValidty throw error
+ * @throw Cidr notation must include / character
  */
 function cidrToSubnetAndPrefix(cidr) {
     if (cidr.includes("/")) cidr = cidr.split("/");
@@ -596,6 +608,9 @@ function cidrToSubnetAndPrefix(cidr) {
 
     const subnetAddr = toArrayAddress(cidr[0]);
     const prefix = decimalPrefix(cidr[1]);
+    ipv4RangeValidity(subnetAddr);
+    prefixRangeValidty(prefix);
+    // won't use netAddrValidty() to avoid overwelming this function
     return { subnetAddr, prefix };
 }
 
@@ -1009,6 +1024,11 @@ function vlsmAddRemoveCallback(e) {
 
 /**
  * @param {string} cidrAddr
+ * @requires cidrToSubnetAndPrefix
+ * @requires ipv4RangeValidity throws error
+ * @requires getIntrestOctIndFromPreix
+ * @requires prefix2mask
+ * @requires blockSizeFromPrefix
  */
 function mainSubnetData(cidrAddr) {
     const mainSubnet = cidrToSubnetAndPrefix(cidrAddr);
@@ -1105,7 +1125,7 @@ function nextSubnetAddr(subnetAddr, blockSize) {
     // fuse the octets: 32 chars string
     const binSubnetAddr = subnetAddr.join("");
 
-    // addition
+    // addition (looses extra 0s that on the left)
     let nextSubentAddr = addBin(bin2dec(binSubnetAddr), blockSize);
 
     // left padding 0 bits
