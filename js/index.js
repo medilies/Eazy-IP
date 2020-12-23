@@ -130,7 +130,8 @@ clsForm.addEventListener("submit", (e) => {
             intrestOctInd
         );
         const classNeighboringSubnetsTable = classNeighboringSubnetsTableGen(
-            classNeighboringSubnetsList
+            classNeighboringSubnetsList,
+            mainSubnetInfo.subnetIp
         );
         clsClassLvlNeighborsDiv.innerHTML =
             `All the Possible /${prefix} subnets on ${
@@ -151,7 +152,8 @@ clsForm.addEventListener("submit", (e) => {
             intrestOctInd
         );
         const upperPrefixNeighboringSubnetsTable = upperPrefixNeighboringSubnetsTableGen(
-            prefixedNeighbors
+            prefixedNeighbors,
+            mainSubnetInfo.subnetIp
         );
         clsUpperPrefixesDiv.innerHTML =
             `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
@@ -179,6 +181,7 @@ vlsmForm.addEventListener("submit", (e) => {
     const cidrInput = vlsmSubnet.value.toString();
 
     const mainSubnet = mainSubnetData(cidrInput);
+    // refuse /32,31,30 prefixes
 
     netAddrValidty(
         mainSubnet.subnetAddr,
@@ -644,8 +647,9 @@ function subnetTableGen(info) {
 
 /**
  * @param {*} neighboringInfo
+ * @param {string} mainSubnetAddr only used for deciding if table row needs to be highlighted
  */
-function classNeighboringSubnetsTableGen(neighboringInfo) {
+function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
     let table = `<table>
     <tr>
         <th></th>
@@ -657,7 +661,11 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
 
     neighboringInfo.forEach((subnet, i) => {
         table += `
-        <tr>
+        <tr ${
+            subnet.subnetIp === mainSubnetAddr
+                ? "class='js-focused-subnet''"
+                : ""
+        }>
             <th>${i + 1}</th>
             <td>${subnet.subnetIp}</td>
             <td>${subnet.firstHost}</td>
@@ -675,9 +683,13 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
  *
  * a bit complexe to explain just debug it to understand
  *
- * @param {*} prefixedNeighbors
+ * @param {*} prefixedNeighbors [subnetsList: {subnets: string[], prefix: number}, ...]
+ * @param {string} mainSubnetAddr only used for deciding if table row needs to be highlighted
  */
-function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
+function upperPrefixNeighboringSubnetsTableGen(
+    prefixedNeighbors,
+    mainSubnetAddr
+) {
     // empty in case the user inputed an address with 8,16,24 prefix!
 
     // exception
@@ -702,7 +714,9 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
 
     // CORE LOOP
     largestSubnetsList.forEach((subnet) => {
-        table += "<tr>";
+        table += `<tr ${
+            subnet === mainSubnetAddr ? "class='js-focused-subnet''" : ""
+        }>`;
 
         for (let i = 0; i < SubnetListsIterators.length; i++) {
             const currentSubnetsList = prefixedNeighbors[i].subnets;
@@ -723,6 +737,11 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
     return table;
 }
 
+/**
+ *
+ * @param {*} chunksInfo object with all the info extracted about the chunks
+ * @param {number} mainSubnetSize block size of the container subnet, used for deciding if table row needs to be highlighted
+ */
 function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
     let table = `<table>
     <tr>
@@ -745,7 +764,7 @@ function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
         if (outOfBoundDetector > mainSubnetSize) outOfBound = true;
 
         table += `
-        <tr ${outOfBound ? "class='extra'" : ""}>
+        <tr ${outOfBound ? "class='js-extra'" : ""}>
             <td>${subnet.subnetName}</td>
             <td>${subnet.subnetAddr}</td>
             <td>${subnet.firstHost}</td>
@@ -975,6 +994,9 @@ function getPrefixesNeighboringSubnets(
     return prefixedNeighbors;
 }
 
+/**
+ * @param {*} e click event
+ */
 function vlsmAddRemoveCallback(e) {
     e.preventDefault();
 
@@ -986,12 +1008,10 @@ function vlsmAddRemoveCallback(e) {
 }
 
 /**
- *  **ADD VALIDATION HERE
  * @param {string} cidrAddr
  */
 function mainSubnetData(cidrAddr) {
     const mainSubnet = cidrToSubnetAndPrefix(cidrAddr);
-    // refuse /30 /31 /32
     mainSubnet.intrestOctInd = getIntrestOctIndFromPreix(mainSubnet.prefix);
     mainSubnet.mask = prefix2mask(mainSubnet.prefix, mainSubnet.intrestOctInd);
     mainSubnet.size = blockSizeFromPrefix(mainSubnet.prefix);

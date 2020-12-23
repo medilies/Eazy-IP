@@ -27,6 +27,10 @@ th {
     cursor: pointer;
 }
 
-.extra {
+.js-extra {
     background: #c33;
+}
+
+.js-focused-subnet {
+    background: #33c;
 }
