@@ -26,3 +26,7 @@ th {
 .clickables {
     cursor: pointer;
 }
+
+.extra {
+    background: #c33;
+}

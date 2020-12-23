@@ -15,7 +15,7 @@
  * - Warn user when he enters subnet or broadcast @ as unicast address
  * - highligh the given IP inside the subnet
  * - Adopt OOP code
- * - VLSM net@ needs a validation function
+ * - VLSM net@ needs a validation function (divide intresting on blockSizeFromMask() : the modulat must be 0 )
  *
  * NOTE:
  * - variable named blocksize aren't so fidel to the name!! (255 mask exception)
@@ -175,6 +175,8 @@ clsForm.addEventListener("submit", (e) => {
 
 vlsmForm.addEventListener("submit", (e) => {
     e.preventDefault();
+
+    const vlsmChunksDiv = document.querySelector("#js-vlsm-chunks");
     const cidrInput = vlsmSubnet.value.toString();
 
     const mainSubnet = mainSubnetData(cidrInput);
@@ -183,6 +185,9 @@ vlsmForm.addEventListener("submit", (e) => {
     const neededSize = vlsmChuncks.reduce((acc, curr) => {
         return (acc += parseInt(curr.blockSize));
     }, 0);
+
+    const vlsmChunksTable = vlsmChunksTableGen(vlsmChuncks, mainSubnet.size);
+    vlsmChunksDiv.innerHTML = vlsmChunksTable;
 
     console.table(mainSubnet);
     console.table(vlsmChuncks);
@@ -627,6 +632,7 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
         <th>Last host</th>
         <th>Broadcast address</th>
     </tr>`;
+
     neighboringInfo.forEach((subnet, i) => {
         table += `
         <tr>
@@ -637,6 +643,7 @@ function classNeighboringSubnetsTableGen(neighboringInfo) {
             <td>${subnet.subnetBroadcastIp}</td>
         </tr>`;
     });
+
     table += "</table>";
     return table;
 }
@@ -687,6 +694,46 @@ function upperPrefixNeighboringSubnetsTableGen(prefixedNeighbors) {
         }
 
         table += "</tr>";
+    });
+
+    table += "</table>";
+
+    return table;
+}
+
+function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
+    let table = `<table>
+    <tr>
+        <th>Name</th>
+        <th>Subnet address</th>
+        <th>First host</th>
+        <th>Last host</th>
+        <th>Broadcast address</th>
+        <th>Prefix</th>
+        <th>Subnetmask</th>
+        <th>Used space</th>
+        <th>Free space</th>
+    </tr>`;
+
+    let outOfBoundDetector = 0;
+    let outOfBound = false;
+
+    chunksInfo.forEach((subnet) => {
+        outOfBoundDetector += subnet.blockSize;
+        if (outOfBoundDetector > mainSubnetSize) outOfBound = true;
+
+        table += `
+        <tr ${outOfBound ? "class='extra'" : ""}>
+            <td>${subnet.subnetName}</td>
+            <td>${subnet.subnetAddr}</td>
+            <td>${subnet.firstHost}</td>
+            <td>${subnet.lastHost}</td>
+            <td>${subnet.subnetBroadcastIp}<t/d>
+            <td>${subnet.prefix}</td>
+            <td>${subnet.mask}</td>
+            <td>${subnet.subnetOccupation}</td>
+            <td>${subnet.freeSpace}</td>
+        </tr>`;
     });
 
     table += "</table>";
@@ -924,7 +971,7 @@ function vlsmAddRemoveCallback(e) {
 }
 
 /**
- *
+ *  **ADD VALIDATION HERE
  * @param {string} cidrAddr
  */
 function mainSubnetData(cidrAddr) {
