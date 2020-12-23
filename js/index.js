@@ -276,7 +276,7 @@ function ipv4MaskValidity(mask) {
 
     mask.forEach((octet) => {
         if (!maskDecimals.includes(parseInt(octet)))
-            throw `invalid mask ${mask}`;
+            if (octet != 0) throw `invalid mask ${mask}`;
     });
 }
 
