@@ -627,7 +627,7 @@ function cidrToSubnetAndPrefix(cidr) {
  */
 function subnetTableGen(info) {
     return `
-    <table>
+    <table class='properties-table'>
         <tr>
             <th>${info.ipClass == undefined ? "Subnet" : "Network"} address</th>
             <td>${info.subnetIp}</td>
@@ -665,7 +665,7 @@ function subnetTableGen(info) {
  * @param {string} mainSubnetAddr only used for deciding if table row needs to be highlighted
  */
 function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
-    let table = `<table>
+    let table = `<table class="long-table">
     <tr>
         <th></th>
         <th>Subnet address</th>
@@ -681,7 +681,7 @@ function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
                 ? "class='js-focused-subnet''"
                 : ""
         }>
-            <th>${i + 1}</th>
+            <td>${i + 1}</td>
             <td>${subnet.subnetIp}</td>
             <td>${subnet.firstHost}</td>
             <td>${subnet.lastHost}</td>
@@ -719,7 +719,7 @@ function upperPrefixNeighboringSubnetsTableGen(
         return 0;
     });
 
-    let table = "<table>";
+    let table = "<table class='long-table'>";
     // headers row
     table += "<tr>";
     prefixedNeighbors.forEach((subnetsList) => {
@@ -758,7 +758,7 @@ function upperPrefixNeighboringSubnetsTableGen(
  * @param {number} mainSubnetSize block size of the container subnet, used for deciding if table row needs to be highlighted
  */
 function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
-    let table = `<table>
+    let table = `<table class='long-table'>
     <tr>
         <th>Name</th>
         <th>Subnet address</th>
