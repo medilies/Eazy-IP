@@ -22,8 +22,13 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+input:focus,
+button:focus {
+    outline: none;
+}
+
 .max-width-container {
-    max-width: 1500px;
+    max-width: 1000px;
 }
 
 /* ******************************************************* */
@@ -63,17 +68,20 @@ nav {
 main {
     padding: 1rem;
     background: url(./../assets/bg1.png) no-repeat center center / cover;
-    min-height: 80vh;
+    min-height: 95vh;
+    background-attachment: fixed;
 }
 
 main div.max-width-container {
     padding: 1rem;
+    margin: 0 auto;
     border: #333 1px dotted;
 }
 
 #options {
     display: flex;
-    margin-left: 2rem;
+    width: fit-content;
+    margin: 0 auto;
     border-radius: 5px 5px 0px 0px;
 }
 
@@ -82,6 +90,7 @@ div#options > div {
     background: var(--primary-color2);
     padding: 0.6rem 0.4rem;
     font-size: 1.5rem;
+    font-weight: bold;
     cursor: pointer;
     text-align: center;
 }
@@ -108,12 +117,88 @@ div#options > div:last-child {
     border-radius: 12px;
 }
 
+@media (max-width: 480px) {
+    .soft-container {
+        padding: 0.8rem 0.5rem;
+    }
+
+    main {
+        padding: 0rem;
+    }
+
+    main div.max-width-container {
+        padding: 0.3rem;
+    }
+
+    div#options > div {
+        padding: 0.4rem 0.3rem;
+        font-size: 1rem;
+    }
+
+    #clf-addr,
+    #cls-addr,
+    #vlsm {
+        padding: 0.5rem 0.5rem 1rem 0.5rem;
+    }
+}
+
+/* ************************** */
+/* formes */
+/* ************************** */
+
+.short-input {
+    width: 2.5rem;
+}
+
+label {
+    display: inline-block;
+    margin-top: 0.8rem;
+}
+
+input {
+    border: none;
+    border-bottom: 2px solid var(--complementary-color11);
+    padding: 0.4rem 0.2rem;
+    margin: 0 0 0.2rem 0;
+    font-size: 1rem;
+    max-width: 150px;
+    background-color: rgba(247, 247, 247, 0.9);
+}
+
+input:focus {
+    border-bottom: 3px solid var(--complementary-color21);
+}
+
+.btn {
+    cursor: pointer;
+    background-color: var(--complementary-color11);
+    border: none;
+    padding: 0.33rem 0.66rem;
+    margin: 0.33rem 0;
+    border-radius: 15px;
+    font-weight: bold;
+}
+
+.btn:hover {
+    background-color: var(--complementary-color21);
+}
+/* ************************** */
+/* tables */
+/* ************************** */
 table {
     border-collapse: collapse;
 }
 
+table.long-table {
+    border: var(--primary-color4) solid 1px;
+}
+
 tr:nth-child(odd) {
-    background-color: #ddd;
+    background-color: #e1e1e1;
+}
+
+tr:nth-child(even) {
+    background-color: #fff;
 }
 
 td,
@@ -125,10 +210,10 @@ th {
 .long-table td {
     border-left: 1px #888 dotted;
     border-right: 1px #888 dotted;
-    max-width: 135px;
+    max-width: 145px;
 }
+
 .long-table th {
-    /* border: 1px 0px #888 dotted; */
     background-color: var(--primary-color4);
     color: #fff;
 }
@@ -137,14 +222,33 @@ th {
     text-align: left;
     color: var(--primary-color4);
 }
-/* ******************************************************* */
-/* ... */
-/* ******************************************************* */
 
 .js-extra {
-    background: #c33 !important;
+    background: rgb(255, 120, 120) !important;
 }
 
 .js-focused-subnet {
-    background: #33c !important;
+    background: rgb(120, 120, 255) !important;
 }
+
+.scroll {
+    width: calc(var(100% - 20px));
+    overflow: auto;
+    white-space: nowrap;
+    margin: auto;
+}
+
+@media (max-width: 480px) {
+    td,
+    th {
+        padding: 0.2rem;
+    }
+
+    .properties-table th,
+    .properties-table td {
+        display: inline-block;
+    }
+}
+/* ******************************************************* */
+/* ... */
+/* ******************************************************* */

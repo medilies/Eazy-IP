@@ -26,17 +26,21 @@
                             Collect the network's info of the given unicast
                             address
                         </p>
-                        <label>Classful IPv4 address</label>
+                        <label>Classful IPv4 address:</label><br />
                         <input
                             type="text"
                             id="js-clf-address"
-                            placeholder="example 192.168.1.2"
+                            placeholder="i.e. 192.168.1.2"
                             required
                         />
                         <br />
-                        <button type="submit">Get info</button>
+                        <button type="submit" class="btn">Get info</button>
                     </form>
-                    <div id="js-clf-info" class="soft-container"></div>
+                    <div class="soft-container">
+                        <div class="scroll">
+                            <div id="js-clf-info"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="cls-addr" class="hidden">
@@ -45,7 +49,7 @@
                             Collect the subnets' info of the given unicast
                             address
                         </p>
-                        <label>classless IPv4 address</label>
+                        <label>Classless IPv4 address:</label><br />
                         <input
                             type="text"
                             id="js-cls-address"
@@ -54,7 +58,7 @@
                             required
                         />
                         <br />
-                        <label>Mask or CIDR prefix</label>
+                        <label>Mask or CIDR prefix:</label><br />
                         <input
                             type="text"
                             id="js-cls-mask-or-prefix"
@@ -63,22 +67,29 @@
                             required
                         />
                         <br />
-                        <button type="submit">Get info</button>
+                        <button type="submit" class="btn">Get info</button>
                     </form>
-                    <div id="js-cls-info" class="soft-container"></div>
-                    <div
-                        id="js-cls-neighbors-info"
-                        class="soft-container"
-                    ></div>
-                    <div
-                        id="js-cls-upper-prefixes-neighbors"
-                        class="soft-container"
-                    ></div>
+                    <div class="soft-container">
+                        <div class="scroll">
+                            <div id="js-cls-info"></div>
+                        </div>
+                    </div>
+                    <div class="soft-container">
+                        <div class="scroll">
+                            <div id="js-cls-neighbors-info"></div>
+                        </div>
+                    </div>
+                    <div class="soft-container">
+                        <div class="scroll">
+                            <div id="js-cls-upper-prefixes-neighbors"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div id="vlsm">
                     <form id="js-vlsm" class="soft-container">
-                        <label>Main subnet address in CIDR notation</label>
+                        <label>Main subnet address in CIDR notation:</label
+                        ><br />
                         <input
                             type="text"
                             id="js-vlsm-network"
@@ -88,7 +99,8 @@
                         /><br />
 
                         <label
-                            >Subnet chunks (nubmer of hosts per subnet):</label
+                            >Subnet chunks (optional chunk name & hosts per
+                            subnet):</label
                         ><br />
 
                         <div id="js-vlsm-inputs">
@@ -100,7 +112,7 @@
                                 />
                                 <input
                                     type="text"
-                                    class="js-vlsm-subnets"
+                                    class="js-vlsm-subnets short-input"
                                     placeholder="5"
                                     value="5"
                                     required
@@ -114,7 +126,7 @@
                                 />
                                 <input
                                     type="text"
-                                    class="js-vlsm-subnets"
+                                    class="js-vlsm-subnets short-input"
                                     placeholder="13"
                                     value="13"
                                     required
@@ -129,7 +141,7 @@
                                 />
                                 <input
                                     type="text"
-                                    class="js-vlsm-subnets"
+                                    class="js-vlsm-subnets short-input"
                                     placeholder="19"
                                     value="19"
                                     required
@@ -139,9 +151,13 @@
                             </div>
                         </div>
 
-                        <button type="submit">Get results</button>
+                        <button type="submit" class="btn">Get results</button>
                     </form>
-                    <div id="js-vlsm-chunks" class="soft-container"></div>
+                    <div class="soft-container">
+                        <div class="scroll">
+                            <div id="js-vlsm-chunks"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
