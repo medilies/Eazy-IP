@@ -104,7 +104,7 @@ clsForm.addEventListener("submit", (e) => {
 
         // cut the crap at 31 and 32 prefixes
         if ([31, 32].includes(prefix))
-            throw `There is no specs to analyse about the /${prefix} prefix`;
+            throw `There is no info to get about the /${prefix} subnets`;
 
         const mainSubnetInfo = getClsIpData(ip, mask, intrestOctInd);
         const subnetTable = subnetTableGen(mainSubnetInfo);
@@ -128,9 +128,10 @@ clsForm.addEventListener("submit", (e) => {
             mainSubnetInfo.subnetIp
         );
         clsClassLvlNeighborsDiv.innerHTML =
-            `All the Possible /${prefix} subnets on ${
+            `<p>All the Possible /${prefix} subnets in ${
                 classNeighboringSubnetsList[0].subnetIp
-            }/${8 * parseInt(prefix / 8)}` + classNeighboringSubnetsTable;
+            }/${8 * parseInt(prefix / 8)} with their details</p>` +
+            classNeighboringSubnetsTable;
 
         //-------------------------
         // Part THREE
@@ -150,22 +151,33 @@ clsForm.addEventListener("submit", (e) => {
             mainSubnetInfo.subnetIp
         );
         clsUpperPrefixesDiv.innerHTML =
-            `<h4>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</h4>` +
+            `<p>Possible /${prefix} neighboring subnets on a varaition of larger prefixes</p>` +
             upperPrefixNeighboringSubnetsTable;
         //*
     } catch (err) {
         // thrown from main scope
-        if (err.includes("There is no specs to analyse about the /"))
-            console.warn(err);
-        else if (err === "No class level neighbors to show") console.warn(err);
-        else if (err === "No prfix level neighbors to show") console.warn(err);
+        if (err.includes("There is no info to get about the "))
+            clsDiv.innerHTML = "<p class='notice-text'>" + err + "</p>";
+        //*
+        else if (err === "No class level neighbors to show")
+            clsClassLvlNeighborsDiv.innerHTML =
+                "<p class='notice-text'>This info field isn't available for /8 /16 /24 subnets</p>";
+        //*
+        else if (err === "No prfix level neighbors to show")
+            clsUpperPrefixesDiv.innerHTML =
+                "<p class='notice-text'>This info field isn't available for /9  /17 /25 subnets</p>";
+        //*
         // thrown from functions
         else if (err.includes("It may include an out of range [0-255] octet"))
-            console.warn(err);
-        else if (err === "Out of bound prefix") console.warn(err);
-        else if (err.includes("invalid mask ")) console.warn(err);
+            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+        else if (err.includes("Out of bound prefix"))
+            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+        else if (err.includes("invalid mask "))
+            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
         // *
-        else console.error(`internal error: ${err}`);
+        else
+            clsDiv.innerHTML =
+                "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
     }
 });
 
@@ -206,18 +218,36 @@ vlsmForm.addEventListener("submit", (e) => {
         //*
     } catch (err) {
         // thrown from main scope
-        if (err.includes("anti-vlsm prefix")) console.warn(err);
-        else if (err.includes("Main subnet capacity exceeded with "))
-            console.warn(err);
-        // thrown from functions
-        else if (err.includes("Cidr notation must include /"))
-            console.warn(err);
-        else if (err.includes("It may include an out of range [0-255] octet"))
-            console.warn(err);
-        else if (err === "Out of bound prefix") console.warn(err);
-        else if (err.includes("Invalide network address")) console.warn(err);
+        if (err.includes("anti-vlsm prefix"))
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>VLSM can't be applied on /32, /31 and 32 subnets</p>";
         //*
-        else console.error(err);
+        else if (err.includes("Main subnet capacity exceeded with "))
+            vlsmChunksDiv.innerHTML +=
+                "<p class='alarming-text'>" +
+                err +
+                " (See used space & free space in red rows)</p>";
+        //*
+        // thrown from functions
+        else if (err == "CIDR notation must include the / character")
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>" + err + " </p>";
+        //*
+        else if (err.includes("It may include an out of range [0-255] octet"))
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>" + err + " </p>";
+        //*
+        else if (err.includes("Out of bound prefix"))
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>" + err + " </p>";
+        //*
+        else if (err.includes("Invalide network address"))
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>" + err + " </p>";
+        //*
+        else
+            vlsmChunksDiv.innerHTML =
+                "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
     }
 });
 
@@ -302,7 +332,7 @@ function prefixRangeValidty(prefix) {
     // exception
     if (isNaN(prefix)) throw "Bad function use";
     if (prefix > 0 && prefix < 33) return true;
-    throw "Out of bound prefix";
+    throw `Out of bound prefix ${prefix}`;
 }
 
 /**
@@ -604,7 +634,7 @@ function prefixFromSize(size) {
  */
 function cidrToSubnetAndPrefix(cidr) {
     if (cidr.includes("/")) cidr = cidr.split("/");
-    else throw "Cidr notation must include / character";
+    else throw "CIDR notation must include the / character";
 
     const subnetAddr = toArrayAddress(cidr[0]);
     const prefix = decimalPrefix(cidr[1]);
@@ -665,7 +695,7 @@ function subnetTableGen(info) {
  * @param {string} mainSubnetAddr only used for deciding if table row needs to be highlighted
  */
 function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
-    let table = `<table class="long-table">
+    let table = `<div class='scroll'><table class="long-table">
     <tr>
         <th></th>
         <th>Subnet address</th>
@@ -689,7 +719,7 @@ function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
         </tr>`;
     });
 
-    table += "</table>";
+    table += "</table><div>";
     return table;
 }
 
@@ -719,7 +749,7 @@ function upperPrefixNeighboringSubnetsTableGen(
         return 0;
     });
 
-    let table = "<table class='long-table'>";
+    let table = "<div class='scroll'><table class='long-table'>";
     // headers row
     table += "<tr>";
     prefixedNeighbors.forEach((subnetsList) => {
@@ -747,7 +777,7 @@ function upperPrefixNeighboringSubnetsTableGen(
         table += "</tr>";
     });
 
-    table += "</table>";
+    table += "</table></div>";
 
     return table;
 }
@@ -758,7 +788,7 @@ function upperPrefixNeighboringSubnetsTableGen(
  * @param {number} mainSubnetSize block size of the container subnet, used for deciding if table row needs to be highlighted
  */
 function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
-    let table = `<table class='long-table'>
+    let table = `<div class='scroll'><table class='long-table'>
     <tr>
         <th>Name</th>
         <th>Subnet address</th>
@@ -792,7 +822,7 @@ function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
         </tr>`;
     });
 
-    table += "</table>";
+    table += "</table></div>";
 
     return table;
 }

@@ -41,10 +41,7 @@
 
                 <div id="clf-addr" class="hidden">
                     <form id="js-clf-addressing" class="soft-container">
-                        <p>
-                            Collect the network's info of the given unicast
-                            address
-                        </p>
+                        <p>Collect the network's info of the given address</p>
                         <label for="clf-addr"
                             >Classful
                             <span class="colored-text">IPv4 address</span
@@ -61,9 +58,7 @@
                         <button type="submit" class="btn">Get info</button>
                     </form>
                     <div class="soft-container">
-                        <div class="scroll">
-                            <div id="js-clf-info"></div>
-                        </div>
+                        <div id="js-clf-info"></div>
                     </div>
                 </div>
 
@@ -103,18 +98,26 @@
                         <button type="submit" class="btn">Get info</button>
                     </form>
                     <div class="soft-container">
-                        <div class="scroll">
-                            <div id="js-cls-info"></div>
+                        <span class="colored-text">Subnet</span>
+                        info
+                        <div id="js-cls-info"></div>
+                    </div>
+                    <div class="soft-container">
+                        <div id="js-cls-neighbors-info">
+                            (Extra)
+                            <span class="colored-text"
+                                >Possible adjacent subnets details</span
+                            >
+                            in the /8, /16 or /24 container subnet
                         </div>
                     </div>
                     <div class="soft-container">
-                        <div class="scroll">
-                            <div id="js-cls-neighbors-info"></div>
-                        </div>
-                    </div>
-                    <div class="soft-container">
-                        <div class="scroll">
-                            <div id="js-cls-upper-prefixes-neighbors"></div>
+                        <div id="js-cls-upper-prefixes-neighbors">
+                            (Extra)
+                            <span class="colored-text"
+                                >Possible adjacent subnets
+                            </span>
+                            in container subnets with a variation of prefixes
                         </div>
                     </div>
                 </div>
@@ -195,9 +198,7 @@
                         <button type="submit" class="btn">Get results</button>
                     </form>
                     <div class="soft-container">
-                        <div class="scroll">
-                            <div id="js-vlsm-chunks"></div>
-                        </div>
+                        <div id="js-vlsm-chunks"></div>
                     </div>
                 </div>
 

@@ -52,6 +52,21 @@ body {
     color: var(--complementary-color12);
     font-weight: bold;
 }
+
+.alarming-text {
+    padding: 0.2rem;
+    margin: 0.4rem auto;
+    border: solid 2px#f00;
+    border-radius: 5px;
+    background-color: rgb(255, 172, 172);
+}
+.notice-text {
+    padding: 0.2rem;
+    margin: 0.4rem auto;
+    border: solid 2px#00f;
+    border-radius: 5px;
+    background-color: rgb(172, 172, 253);
+}
 /* ******************************************************* */
 /* NAV */
 /* ******************************************************* */
