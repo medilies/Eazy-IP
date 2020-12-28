@@ -7,12 +7,17 @@
             name="description"
             content="This application offers tools for network engineers to make IPv4 easy, smooth & flawless. One of the most obvious service is a VLSM calculator"
         />
-        <link rel="manifest" href="manifest.json" />
-        <link rel="apple-touch-icon" href="/assets//logo22.png" sizes="144x144">
-        <meta name="theme-color" content="#1167b1">
         <link rel="stylesheet" href="css/index.css" />
-        <link rel="icon" href="favicon.png" type="image/png" sizes="32x32">
+        <link rel="icon" href="favicon.png" type="image/png" sizes="32x32" />
         <title>Eazy IP</title>
+        <!--  -->
+        <link rel="manifest" href="manifest.json" />
+        <link
+            rel="apple-touch-icon"
+            href="/assets//logo22.png"
+            sizes="144x144"
+        />
+        <meta name="theme-color" content="#1167b1" />
     </head>
     <body>
         <nav>
@@ -40,7 +45,9 @@
                             Collect the network's info of the given unicast
                             address
                         </p>
-                        <label for="clf-addr">Classful <span class="colored-text">IPv4 address</span
+                        <label for="clf-addr"
+                            >Classful
+                            <span class="colored-text">IPv4 address</span
                             >:</label
                         ><br />
                         <input
@@ -80,7 +87,7 @@
                             required
                         />
                         <br />
-                        <label for="cls-mask-or-prefix"></label>
+                        <label for="cls-mask-or-prefix">
                             <span class="colored-text">Mask</span> or
                             <span class="colored-text">Prefix</span>:</label
                         ><br />
@@ -198,6 +205,13 @@
             </div>
         </main>
 
+        <script>
+            if ("serviceWorker" in navigator) {
+                navigator.serviceWorker.register("/sw.js").then(() => {
+                    console.log("SW registered");
+                });
+            }
+        </script>
         <script src="./js/index.js"></script>
         <script src="./js/style.js"></script>
         <!-- <script src="./js/test.js"></script> -->

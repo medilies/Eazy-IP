@@ -1,6 +1,6 @@
 {
-    "name": "Easy IP",
-    "short_name": "Easy IP",
+    "name": "Eazy IP",
+    "short_name": "Eazy IP",
     "icons":[
 
         {
@@ -15,7 +15,7 @@
         },
         {
             "src": "assets/logo22.png",
-            "sizes": "192x192",
+            "sizes": "144x144",
             "type": "image/png"
         },
         {
