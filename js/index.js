@@ -24,6 +24,12 @@
  * This code is owned by medilies and released under the GPL3 licence
  */
 
+if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/js/sw.js").then(() => {
+        console.log("SW registered");
+    });
+}
+
 // GLOBAL MAPPING ARRAYS. helps relating prefixes and subnetmasks
 const allPrefixes = [
     [1, 2, 3, 4, 5, 6, 7, 8],

@@ -2,8 +2,6 @@
 /* FORMS SUBMISSION HANDLERS */
 /* ******************************************************* */
 :root {
-    --container-max-width: 1600px;
-
     --primary-color: #1167b1;
     --primary-color1: #187bcd;
     --primary-color2: #2a9df4;
@@ -31,6 +29,10 @@ button:focus {
     max-width: 1000px;
 }
 
+body {
+    background: url(./../assets/bg2.png) no-repeat center center / cover;
+}
+
 /* ******************************************************* */
 /* utility classes */
 /* ******************************************************* */
@@ -45,12 +47,40 @@ button:focus {
 .clickables {
     cursor: pointer;
 }
+
+.colored-text {
+    color: var(--complementary-color12);
+    font-weight: bold;
+}
 /* ******************************************************* */
 /* NAV */
 /* ******************************************************* */
-nav {
-    height: 50px;
-    border-bottom: 3px solid rgb(0, 140, 255);
+.current-nav-option {
+    border-bottom: 2px solid var(--primary-color4);
+}
+
+nav div.max-width-container {
+    margin: 0 auto;
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+}
+
+#nav-options {
+    height: 100%;
+    display: flex;
+}
+
+#nav-options > div {
+    cursor: pointer;
+    color: var(--primary-color4);
+    text-align: center;
+    font-weight: bolder;
+    padding: 1rem;
+}
+
+#nav-options > div:hover {
+    color: var(--primary-color);
 }
 
 /* ******************************************************* */
@@ -67,7 +97,7 @@ nav {
 
 main {
     padding: 1rem;
-    background: url(./../assets/bg1.png) no-repeat center center / cover;
+    /* background: url(./../assets/bg1.png) no-repeat center center / cover; */
     min-height: 95vh;
     background-attachment: fixed;
 }
@@ -75,7 +105,7 @@ main {
 main div.max-width-container {
     padding: 1rem;
     margin: 0 auto;
-    border: #333 1px dotted;
+    /* border: #333 1px dotted; */
 }
 
 #options {
@@ -115,6 +145,12 @@ div#options > div:last-child {
     padding: 1rem 1rem 3rem 1rem;
     background: var(--primary-color3);
     border-radius: 12px;
+}
+
+@media (max-width: 550px) {
+    div#options > div {
+        font-size: 1.2rem;
+    }
 }
 
 @media (max-width: 480px) {
