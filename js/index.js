@@ -63,17 +63,37 @@ const vlsmChunksDiv = document.querySelector("#js-vlsm-chunks");
 //*******************************************************
 clfForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    clfDiv.innerHTML = "";
 
     let ip = clfIp.value.toString();
-    ip = toArrayAddress(ip);
 
-    //VVVVVVVVVVVVVVVVVVVVVVVVVVVV handle the error
-    ipv4RangeValidity(ip);
+    try {
+        ip = toArrayAddress(ip);
 
-    const networkData = getClfIpData(ip);
+        ipv4RangeValidity(ip);
 
-    const subnetTable = subnetTableGen(networkData);
-    clfDiv.innerHTML = subnetTable;
+        const networkData = getClfIpData(ip);
+
+        const subnetTable = subnetTableGen(networkData);
+        clfDiv.innerHTML = subnetTable;
+    } catch (err) {
+        // console.error(err);
+        if (typeof err == "string")
+            if (err === "reserved class of IP")
+                clfDiv.innerHTML =
+                    "<p class='notice-text'>The given IPv4 address may be part of class E or class D reserved networks</p>";
+            else if (
+                err.includes("It may include an out of range [0-255] octet")
+            )
+                clfDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+            // *
+            else
+                clfDiv.innerHTML =
+                    "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
+        else
+            clfDiv.innerHTML =
+                "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
+    }
 });
 
 clsForm.addEventListener("submit", (e) => {
@@ -109,6 +129,8 @@ clsForm.addEventListener("submit", (e) => {
         const mainSubnetInfo = getClsIpData(ip, mask, intrestOctInd);
         const subnetTable = subnetTableGen(mainSubnetInfo);
         clsDiv.innerHTML = subnetTable;
+
+        AlertClassDorE(mainSubnetInfo, clsDiv);
 
         //-------------------------
         // Part TWO
@@ -155,26 +177,36 @@ clsForm.addEventListener("submit", (e) => {
             upperPrefixNeighboringSubnetsTable;
         //*
     } catch (err) {
-        // thrown from main scope
-        if (err.includes("There is no info to get about the "))
-            clsDiv.innerHTML = "<p class='notice-text'>" + err + "</p>";
-        //*
-        else if (err === "No class level neighbors to show")
-            clsClassLvlNeighborsDiv.innerHTML =
-                "<p class='notice-text'>This info field isn't available for /8 /16 /24 subnets</p>";
-        //*
-        else if (err === "No prfix level neighbors to show")
-            clsUpperPrefixesDiv.innerHTML =
-                "<p class='notice-text'>This info field isn't available for /9  /17 /25 subnets</p>";
-        //*
-        // thrown from functions
-        else if (err.includes("It may include an out of range [0-255] octet"))
-            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
-        else if (err.includes("Out of bound prefix"))
-            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
-        else if (err.includes("invalid mask "))
-            clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
-        // *
+        // console.error(err);
+        if (typeof err == "string")
+            if (err.includes("There is no info to get about the "))
+                // thrown from main scope
+                clsDiv.innerHTML = "<p class='notice-text'>" + err + "</p>";
+            //*
+            else if (err === "No class level neighbors to show") {
+                clsClassLvlNeighborsDiv.innerHTML =
+                    "<p class='notice-text'>This info field isn't available for /8 /16 /24 subnets</p>";
+                clsUpperPrefixesDiv.innerHTML =
+                    "<p class='notice-text'>This info field isn't available for /8 /16 /24 subnets</p>";
+            }
+            //*
+            else if (err === "No prfix level neighbors to show")
+                clsUpperPrefixesDiv.innerHTML =
+                    "<p class='notice-text'>This info field isn't available for /9  /17 /25 subnets</p>";
+            //*
+            // thrown from functions
+            else if (
+                err.includes("It may include an out of range [0-255] octet")
+            )
+                clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+            else if (err.includes("Out of bound prefix"))
+                clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+            else if (err.includes("invalid mask "))
+                clsDiv.innerHTML = "<p class='alarming-text'>" + err + "</p>";
+            // *
+            else
+                clsDiv.innerHTML =
+                    "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
         else
             clsDiv.innerHTML =
                 "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
@@ -183,6 +215,7 @@ clsForm.addEventListener("submit", (e) => {
 
 vlsmForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    vlsmChunksDiv.innerHTML = "";
 
     const cidrInput = vlsmSubnet.value.toString();
 
@@ -192,13 +225,13 @@ vlsmForm.addEventListener("submit", (e) => {
         if ([32, 31, 30].includes(mainSubnet.prefix)) throw "anti-vlsm prefix";
 
         netAddrValidty(
-            mainSubnet.subnetAddr,
+            mainSubnet.subnetIp,
             mainSubnet.intrestOctInd,
             blockSizeFromMask(mainSubnet.mask, mainSubnet.intrestOctInd),
             mainSubnet.prefix
         );
 
-        const vlsmChuncks = vlsmChunksData([...mainSubnet.subnetAddr]);
+        const vlsmChuncks = vlsmChunksData([...mainSubnet.subnetIp]);
 
         const neededSize = vlsmChuncks.reduce((acc, curr) => {
             return (acc += parseInt(curr.blockSize));
@@ -210,6 +243,8 @@ vlsmForm.addEventListener("submit", (e) => {
         );
         vlsmChunksDiv.innerHTML = vlsmChunksTable;
 
+        AlertClassDorE(vlsmChuncks[vlsmChuncks.length - 1], vlsmChunksDiv);
+
         // notice
         if (neededSize > mainSubnet.size)
             throw `Main subnet capacity exceeded with ${
@@ -217,34 +252,41 @@ vlsmForm.addEventListener("submit", (e) => {
             } addresses`;
         //*
     } catch (err) {
-        // thrown from main scope
-        if (err.includes("anti-vlsm prefix"))
-            vlsmChunksDiv.innerHTML =
-                "<p class='alarming-text'>VLSM can't be applied on /32, /31 and 32 subnets</p>";
-        //*
-        else if (err.includes("Main subnet capacity exceeded with "))
-            vlsmChunksDiv.innerHTML +=
-                "<p class='alarming-text'>" +
-                err +
-                " (See used space & free space in red rows)</p>";
-        //*
-        // thrown from functions
-        else if (err == "CIDR notation must include the / character")
-            vlsmChunksDiv.innerHTML =
-                "<p class='alarming-text'>" + err + " </p>";
-        //*
-        else if (err.includes("It may include an out of range [0-255] octet"))
-            vlsmChunksDiv.innerHTML =
-                "<p class='alarming-text'>" + err + " </p>";
-        //*
-        else if (err.includes("Out of bound prefix"))
-            vlsmChunksDiv.innerHTML =
-                "<p class='alarming-text'>" + err + " </p>";
-        //*
-        else if (err.includes("Invalide network address"))
-            vlsmChunksDiv.innerHTML =
-                "<p class='alarming-text'>" + err + " </p>";
-        //*
+        // console.error(err);
+        if (typeof err == "string")
+            if (err.includes("anti-vlsm prefix"))
+                // thrown from main scope
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>VLSM can't be applied on /32, /31 and 32 subnets</p>";
+            //*
+            else if (err.includes("Main subnet capacity exceeded with "))
+                vlsmChunksDiv.innerHTML +=
+                    "<p class='alarming-text'>" +
+                    err +
+                    " (See used space & free space in red rows)</p>";
+            //*
+            // thrown from functions
+            else if (err == "CIDR notation must include the / character")
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>" + err + " </p>";
+            //*
+            else if (
+                err.includes("It may include an out of range [0-255] octet")
+            )
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>" + err + " </p>";
+            //*
+            else if (err.includes("Out of bound prefix"))
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>" + err + " </p>";
+            //*
+            else if (err.includes("Invalide network address"))
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>" + err + " </p>";
+            //*
+            else
+                vlsmChunksDiv.innerHTML =
+                    "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
         else
             vlsmChunksDiv.innerHTML =
                 "<p class='alarming-text'>INTERNAL ERROR, Please repport this to us</p>";
@@ -253,7 +295,11 @@ vlsmForm.addEventListener("submit", (e) => {
 
 vlsmInputs.addEventListener("click", vlsmAddRemoveCallback);
 
-function warnReservedNetwork() {
+function warnNetOrBroadcastAddr() {
+    // ...
+}
+
+function AlertReservetNet() {
     // ...
 }
 
@@ -414,7 +460,7 @@ function subnetMapping(ip, mask, intrestOctInd) {
         return octet;
     });
 
-    const subnetBroadcastIp = ip.map((octet, i) => {
+    const broadcastIp = ip.map((octet, i) => {
         // next subnet -1
         if (i === intrestOctInd)
             return (blockSize * (subnetIndex + 1) - 1).toString();
@@ -427,14 +473,14 @@ function subnetMapping(ip, mask, intrestOctInd) {
         return octet;
     });
 
-    const lastHost = subnetBroadcastIp.map((octet, i) => {
+    const lastHost = broadcastIp.map((octet, i) => {
         if (i === 3) return (parseInt(octet) - 1).toString();
         return octet;
     });
 
     const availabeHosts = hostsPerSubnet(intrestOctInd, blockSize);
 
-    return [subnetIp, firstHost, lastHost, subnetBroadcastIp, availabeHosts];
+    return [subnetIp, firstHost, lastHost, broadcastIp, availabeHosts];
 }
 
 /**
@@ -636,14 +682,24 @@ function cidrToSubnetAndPrefix(cidr) {
     if (cidr.includes("/")) cidr = cidr.split("/");
     else throw "CIDR notation must include the / character";
 
-    const subnetAddr = toArrayAddress(cidr[0]);
+    const subnetIp = toArrayAddress(cidr[0]);
     const prefix = decimalPrefix(cidr[1]);
-    ipv4RangeValidity(subnetAddr);
+    ipv4RangeValidity(subnetIp);
     prefixRangeValidty(prefix);
     // won't use netAddrValidty() to avoid overwelming this function
-    return { subnetAddr, prefix };
+    return { subnetIp, prefix };
 }
 
+/**
+ * Checks if the given subnet touches class E or class D addresses and appends an elerting HTML text to the given HTML div
+ * @param {*} subnet - **MUST** include the property **broadcastIp**
+ * @param {Element} htmlAlertDiv
+ */
+function AlertClassDorE(subnet, htmlAlertDiv) {
+    if (parseInt(toArrayAddress(subnet.broadcastIp)[0]) >= 224) {
+        htmlAlertDiv.innerHTML += `<p class='alarming-text'>The subnet ${subnet.subnetIp} crosses class E or D IPv4 reserved pools</p>`;
+    }
+}
 //*******************************************************
 // HTML TABLE GENERATION  FUNCTIONS
 //*******************************************************
@@ -672,7 +728,7 @@ function subnetTableGen(info) {
         </tr>
         <tr>
             <th>Broadcast address</th>
-            <td>${info.subnetBroadcastIp}</td>
+            <td>${info.broadcastIp}</td>
         </tr>
         <tr>
             <th>Subnetmask</th>
@@ -715,7 +771,7 @@ function classNeighboringSubnetsTableGen(neighboringInfo, mainSubnetAddr) {
             <td>${subnet.subnetIp}</td>
             <td>${subnet.firstHost}</td>
             <td>${subnet.lastHost}</td>
-            <td>${subnet.subnetBroadcastIp}</td>
+            <td>${subnet.broadcastIp}</td>
         </tr>`;
     });
 
@@ -811,10 +867,10 @@ function vlsmChunksTableGen(chunksInfo, mainSubnetSize) {
         table += `
         <tr ${outOfBound ? "class='js-extra'" : ""}>
             <td>${subnet.subnetName}</td>
-            <td>${subnet.subnetAddr}</td>
+            <td>${subnet.subnetIp}</td>
             <td>${subnet.firstHost}</td>
             <td>${subnet.lastHost}</td>
-            <td>${subnet.subnetBroadcastIp}<t/d>
+            <td>${subnet.broadcastIp}<t/d>
             <td>${subnet.prefix}</td>
             <td>${subnet.mask}</td>
             <td>${subnet.subnetOccupation}</td>
@@ -865,7 +921,7 @@ function getClfIpData(ip) {
             break;
         default:
             // exception
-            throw "unexpected class of IP";
+            throw "reserved class of IP";
     }
 
     const subnetMap = subnetMapping(ip, toArrayAddress(mask), networkOctets);
@@ -874,7 +930,7 @@ function getClfIpData(ip) {
         subnetIp: subnetMap[0].join("."),
         firstHost: subnetMap[1].join("."),
         lastHost: subnetMap[2].join("."),
-        subnetBroadcastIp: subnetMap[3].join("."),
+        broadcastIp: subnetMap[3].join("."),
         subnetMask: mask,
         ipClass: ipClass,
         availabeHosts: availabeHosts,
@@ -897,7 +953,7 @@ function getClsIpData(ip, mask, intrestOctInd) {
         subnetIp: subnetMap[0].join("."),
         firstHost: subnetMap[1].join("."),
         lastHost: subnetMap[2].join("."),
-        subnetBroadcastIp: subnetMap[3].join("."),
+        broadcastIp: subnetMap[3].join("."),
         subnetMask: mask.join("."),
         availabeHosts: subnetMap[4],
     };
@@ -931,7 +987,7 @@ function getClassNeighboringSubnets(mainSubnet, mask, intrestOctInd) {
             subnetIp: currentSubnetMap[0].join("."),
             firstHost: currentSubnetMap[1].join("."),
             lastHost: currentSubnetMap[2].join("."),
-            subnetBroadcastIp: currentSubnetMap[3].join("."),
+            broadcastIp: currentSubnetMap[3].join("."),
         });
     }
     return subnets;
@@ -1107,7 +1163,7 @@ function vlsmChunksData(startAddr) {
 
     // startAddr looses its meanning in first itaration here
     vlsmChuncks.forEach((net) => {
-        net.subnetAddr = [...startAddr];
+        net.subnetIp = [...startAddr];
         nextSubnetAddr(startAddr, net.blockSize);
     });
 
@@ -1116,8 +1172,8 @@ function vlsmChunksData(startAddr) {
             undefined,
             net.firstHost,
             net.lastHost,
-            net.subnetBroadcastIp,
-        ] = subnetMapping(net.subnetAddr, net.mask, net.intrestOctInd);
+            net.broadcastIp,
+        ] = subnetMapping(net.subnetIp, net.mask, net.intrestOctInd);
     });
 
     return vlsmChuncks;
@@ -1133,12 +1189,12 @@ function vlsmChunksData(startAddr) {
  * - add padding 0 bits if it isn't 32 bits long
  * - format next subnet address from string to array
  * - tranform next subnet address from BIN2DEC
- * @param {string[]} subnetAddr passed by reference
+ * @param {string[]} subnetIp passed by reference
  * @param {number} blockSize
  */
-function nextSubnetAddr(subnetAddr, blockSize) {
+function nextSubnetAddr(subnetIp, blockSize) {
     // write octets in binary
-    subnetAddr.forEach((octet, i) => {
+    subnetIp.forEach((octet, i) => {
         octet = dec2bin(octet);
 
         // left padding 0 bits
@@ -1149,11 +1205,11 @@ function nextSubnetAddr(subnetAddr, blockSize) {
             }
         }
 
-        subnetAddr[i] = octet;
+        subnetIp[i] = octet;
     });
 
     // fuse the octets: 32 chars string
-    const binSubnetAddr = subnetAddr.join("");
+    const binSubnetAddr = subnetIp.join("");
 
     // addition (looses extra 0s that on the left)
     let nextSubentAddr = addBin(bin2dec(binSubnetAddr), blockSize);
@@ -1167,15 +1223,15 @@ function nextSubnetAddr(subnetAddr, blockSize) {
     }
 
     // spliting the binary string
-    subnetAddr[0] = nextSubentAddr.substr(-32, 8);
-    subnetAddr[1] = nextSubentAddr.substr(-24, 8);
-    subnetAddr[2] = nextSubentAddr.substr(-16, 8);
-    subnetAddr[3] = nextSubentAddr.substr(-8, 8);
+    subnetIp[0] = nextSubentAddr.substr(-32, 8);
+    subnetIp[1] = nextSubentAddr.substr(-24, 8);
+    subnetIp[2] = nextSubentAddr.substr(-16, 8);
+    subnetIp[3] = nextSubentAddr.substr(-8, 8);
 
     // transforming the binary octets to decimal
-    subnetAddr.forEach((octet, i) => {
+    subnetIp.forEach((octet, i) => {
         octet = bin2dec(octet);
-        subnetAddr[i] = octet;
+        subnetIp[i] = octet;
     });
 
     // the end result is passed by reference
