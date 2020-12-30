@@ -218,9 +218,14 @@
 
         <script>
             if ("serviceWorker" in navigator) {
-                navigator.serviceWorker.register("/sw.js").then(() => {
-                    console.log("SW registered");
-                });
+                navigator.serviceWorker
+                    .register("/sw.js")
+                    .then(function () {
+                        console.log("Service worker registered!");
+                    })
+                    .catch(function (err) {
+                        console.error(err);
+                    });
             }
         </script>
         <script src="./js/index.js"></script>
