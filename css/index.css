@@ -81,6 +81,14 @@ nav div.max-width-container {
     justify-content: space-between;
 }
 
+.logo {
+    font-family: "Freestyle script", sans-serif;
+    font-weight: bolder;
+    cursor: default;
+    font-size: 1.5rem;
+    padding: 0.3rem;
+}
+
 #nav-options {
     height: 100%;
     display: flex;
@@ -116,9 +124,22 @@ nav div.max-width-container {
     margin: 1rem 0;
 }
 
+.js-add-subnet,
+.js-remove-subnet {
+    cursor: pointer;
+    color: var(--complementary-color11);
+    font-size: 1.1rem;
+    padding: 0.2rem;
+}
+
+.js-add-subnet:hover,
+.js-remove-subnet:hover {
+    color: var(--complementary-color21);
+}
+
 main {
     padding: 0 1rem;
-    margin: 1rem 0;
+    margin: 3rem 0;
     min-height: 95vh;
     background-attachment: fixed;
 }
@@ -180,6 +201,7 @@ div#options > div:last-child {
 
     main {
         padding: 0rem;
+        margin: 1rem 0;
     }
 
     main div.max-width-container {

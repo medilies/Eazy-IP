@@ -12,12 +12,11 @@
  * - Single ADDRESSES variables MUST always be in array format
  * - MASK & PREFIX MUST be formated & validated at the start of their main scope
  * - thrown errors preceeded with the comment EXCEPTION aren't meant to be catched
+ * - Dec Bin Hex converter Option | also possibility to hex & bin columns in displayed tables
  *
  * ADD:
  * - Warn user when he enters subnet or broadcast @ as unicast address
- * - highligh the given IP inside the subnet
  * - Adopt OOP code
- * - warn the user if he gave a network or broadcast address that is cant be used for host
  * - save VLSM option
  *
  *
@@ -257,7 +256,7 @@ vlsmForm.addEventListener("submit", (e) => {
             if (err.includes("anti-vlsm prefix"))
                 // thrown from main scope
                 vlsmChunksDiv.innerHTML =
-                    "<p class='alarming-text'>VLSM can't be applied on /32, /31 and 32 subnets</p>";
+                    "<p class='alarming-text'>VLSM can't be applied on /32, /31 and /30 subnets</p>";
             //*
             else if (err.includes("Main subnet capacity exceeded with "))
                 vlsmChunksDiv.innerHTML +=
@@ -1101,9 +1100,9 @@ function getPrefixesNeighboringSubnets(
 function vlsmAddRemoveCallback(e) {
     e.preventDefault();
 
-    if (e.target.classList.contains("add-subnet")) {
+    if (e.target.classList.contains("js-add-subnet")) {
         vlsmInputs.appendChild(vlsmTemplateInput.cloneNode(true));
-    } else if (e.target.classList.contains("remove-subnet")) {
+    } else if (e.target.classList.contains("js-remove-subnet")) {
         e.target.parentElement.remove();
     }
 }

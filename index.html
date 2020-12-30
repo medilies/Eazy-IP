@@ -8,6 +8,10 @@
             content="This application offers tools for network engineers to make IPv4 easy, smooth & flawless. One of the most obvious service is a VLSM calculator"
         />
         <link rel="stylesheet" href="css/index.css" />
+        <link
+            rel="stylesheet"
+            href="/css/fontawesome_free_5.13.0_we_all.min.css"
+        />
         <link rel="icon" href="favicon.png" type="image/png" sizes="32x32" />
         <title>Eazy IP</title>
         <!--  -->
@@ -22,11 +26,12 @@
     <body>
         <nav>
             <div class="max-width-container">
-                <div>LOGOGO</div>
+                <div class="logo">Eazy IP</div>
                 <div id="nav-options">
                     <div>HOME</div>
                     <div class="current-nav-option">APP</div>
                     <div>ABOUT</div>
+                    <div>CONTACT</div>
                 </div>
             </div>
         </nav>
@@ -175,7 +180,7 @@
                                     value="13"
                                     required
                                 />
-                                <span class="add-subnet clickables">+</span>
+                                <i class="js-add-subnet fas fa-plus-circle"></i>
                             </div>
                             <div id="vlsm-ref-input">
                                 <input
@@ -192,8 +197,11 @@
                                     value="19"
                                     required
                                 />
-                                <span class="add-subnet clickables">+</span>
-                                <span class="remove-subnet clickables">x</span>
+
+                                <i class="js-add-subnet fas fa-plus-circle"></i>
+                                <i
+                                    class="js-remove-subnet fas fa-minus-circle"
+                                ></i>
                             </div>
                         </div>
 
