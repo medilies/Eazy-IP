@@ -1,11 +1,13 @@
 <?php ob_start();?>
 
 <div class="max-width-container">
+
     <div id="options">
         <div id="clf-option">Classful address</div>
         <div id="cls-option">Classless address</div>
         <div id="vlsm-option" class="current-option">VLSM</div>
     </div>
+
     <div id="clf-addr" class="hidden">
         <form id="js-clf-addressing" class="soft-container">
             <p>Collect the network's info of the given address</p>
@@ -30,6 +32,7 @@
             <div id="js-clf-info"></div>
         </div>
     </div>
+
     <div id="cls-addr" class="hidden">
         <form id="js-cls-addressing" class="soft-container">
             <p>
@@ -45,8 +48,7 @@
                 type="text"
                 id="js-cls-address"
                 name="cls-addr"
-                placeholder="example 192.168.1.34"
-                value="192.168.1.34"
+                placeholder="i.e. 192.168.1.34"
                 required
             />
             <br />
@@ -58,8 +60,7 @@
                 type="text"
                 id="js-cls-mask-or-prefix"
                 name="cls-mask-or-prefix"
-                placeholder="example 255.255.255.240 or /28"
-                value="/28"
+                placeholder="i.e. 255.255.255.240 || /28"
                 required
             />
             <br />
@@ -89,6 +90,7 @@
             </div>
         </div>
     </div>
+
     <div id="vlsm">
         <form id="js-vlsm" class="soft-container">
             <label for="js-vlsm-network"
@@ -98,8 +100,7 @@
             <input
                 type="text"
                 id="js-vlsm-network"
-                placeholder="example 10.0.0.0/25"
-                value="10.0.0.0/23"
+                placeholder="i.e. 10.0.0.0/25"
                 required
             /><br />
             <label>
@@ -119,7 +120,6 @@
                         class="js-vlsm-subnets short-input"
                         aria-label="The subnet size"
                         placeholder="5"
-                        value="5"
                         required
                     />
                 </div>
@@ -135,7 +135,6 @@
                         class="js-vlsm-subnets short-input"
                         aria-label="The subnet size"
                         placeholder="13"
-                        value="13"
                         required
                     />
                     <i class="js-add-subnet fas fa-plus-circle"></i>
@@ -152,7 +151,6 @@
                         class="js-vlsm-subnets short-input"
                         aria-label="The subnet size"
                         placeholder="19"
-                        value="19"
                         required
                     />
                     <i class="js-add-subnet fas fa-plus-circle"></i>
@@ -167,6 +165,7 @@
             <div id="js-vlsm-chunks"></div>
         </div>
     </div>
+
     <!-- <h1>Supernetting</h1> -->
 </div>
 

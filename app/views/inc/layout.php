@@ -40,10 +40,10 @@
                 </div>
 
                 <div id="nav-options">
-                    <?=$this->nav_element("", "", "", "Home", "");?>
-                    <?=$this->nav_element("", "current-nav-option", "pages/index", "APP", "");?>
-                    <?=$this->nav_element("", "", "", "About", "");?>
-                    <?=$this->nav_element("", "", "", "Contact", "");?>
+                    <?=$this->nav_element("nav-home", "", "", "Home", "");?>
+                    <?=$this->nav_element("nav-app", "", "pages/index", "APP", "");?>
+                    <?=$this->nav_element("nav-about", "", "", "About", "");?>
+                    <?=$this->nav_element("nav-contact", "", "", "Contact", "");?>
                 </div>
 
             </div>
@@ -74,6 +74,22 @@
             });
     }
 </script>
+
+<script>
+if (
+    window.location.pathname === "/" ||
+    window.location.pathname === "/pages" ||
+    window.location.pathname === "/pages/index"
+)
+    document.querySelector("#nav-app").classList.add("current-nav-option");
+else if (window.location.pathname === "/pages/home")
+    document.querySelector("#nav-home").classList.add("current-nav-option");
+else if (window.location.pathname === "/pages/about")
+    document.querySelector("#nav-about").classList.add("current-nav-option");
+else if (window.location.pathname === "/pages/contact")
+    document.querySelector("#nav-contact").classList.add("current-nav-option");
+</script>
+
 <?php if (isset($data['scripts_array'])): ?>
     <?php foreach ($data['scripts_array'] as $script_name): ?>
         <script src="/js/<?=$script_name?>.js"></script>

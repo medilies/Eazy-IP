@@ -5,6 +5,10 @@
  */
 class Pages extends Controller
 {
+    public function __construct()
+    {
+        // do the visitors thingy
+    }
 
     public function index()
     {
