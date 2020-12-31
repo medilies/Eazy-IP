@@ -323,7 +323,6 @@ function toArrayAddress(address) {
     return address.split(".");
 }
 
-// checking masks would be better with a funtion that checks that all 1s in binary are on the left
 /**
  * @param {string | number} octet gets verified if within [0-255]
  */

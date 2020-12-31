@@ -22,15 +22,7 @@ class Pages extends Controller
     protected function nav_element(string $id, string $class_list, string $href, string $textnode, string $fontawesome)
     {
 
-        $element = "<a id='$id' class='$class_list'";
-
-        if ($href !== "") {
-            $element .= "href='";
-            $element .= $GLOBALS['URL_ROOT'];
-            $element .= "/$href'";
-        }
-
-        $element .= ">";
+        $element = "<a id='$id' class='$class_list' href='/$href'>";
 
         if ($fontawesome !== "") {
             $element .= "<i class='$fontawesome'></i> ";
