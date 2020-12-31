@@ -1,5 +1,5 @@
 /* ******************************************************* */
-/* FORMS SUBMISSION HANDLERS */
+/* Initialisations */
 /* ******************************************************* */
 :root {
     --primary-color: #1167b1;
@@ -20,17 +20,27 @@
     font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
 }
 
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
 input:focus,
 button:focus {
     outline: none;
 }
 
+table {
+    border-collapse: collapse;
+}
+
 .max-width-container {
     max-width: 1000px;
+    margin: 0 auto;
 }
 
 body {
-    background: url(./../assets/bg2.png) no-repeat center center / cover;
+    background: url(./../assets/img/bg2.png) no-repeat center center / cover;
 }
 
 /* ******************************************************* */
@@ -75,7 +85,6 @@ body {
 }
 
 nav div.max-width-container {
-    margin: 0 auto;
     display: flex;
     flex-flow: row wrap;
     justify-content: space-between;
@@ -94,7 +103,7 @@ nav div.max-width-container {
     display: flex;
 }
 
-#nav-options > div {
+#nav-options > a {
     cursor: pointer;
     color: var(--primary-color4);
     text-align: center;
@@ -102,12 +111,12 @@ nav div.max-width-container {
     padding: 1rem;
 }
 
-#nav-options > div:hover {
+#nav-options > a:hover {
     color: var(--primary-color);
 }
 
 @media (max-width: 480px) {
-    #nav-options > div {
+    #nav-options > a {
         font-weight: bold;
         padding: 0.3rem;
     }
@@ -146,7 +155,6 @@ main {
 
 main div.max-width-container {
     padding: 0 1rem;
-    margin: 0 auto;
 }
 
 #options {
@@ -263,9 +271,6 @@ input:focus {
 /* ************************** */
 /* tables */
 /* ************************** */
-table {
-    border-collapse: collapse;
-}
 
 table.long-table {
     border: var(--primary-color4) solid 1px;

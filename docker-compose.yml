@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+    web:
+        image: darlink-web
+        # build: ./web
+        ports:
+            - 80:80
+        volumes:
+            - .\:/var/www/html/
+
+        environment:
+            - TZ=CET
