@@ -40,10 +40,10 @@
                 </div>
 
                 <div id="nav-options">
-                    <?=$this->nav_element("nav-home", "", "", "Home", "");?>
-                    <?=$this->nav_element("nav-app", "", "pages/index", "APP", "");?>
-                    <?=$this->nav_element("nav-about", "", "", "About", "");?>
-                    <?=$this->nav_element("nav-contact", "", "", "Contact", "");?>
+                    <?=$this->nav_element("js-nav-home", "", "pages/home", "Home", "");?>
+                    <?=$this->nav_element("js-nav-about", "", "", "About", "");?>
+                    <?=$this->nav_element("js-nav-contact", "", "", "Contact", "");?>
+                    <?=$this->nav_element("js-nav-app", "inactive-app", "", "APP", "");?>
                 </div>
 
             </div>
@@ -76,18 +76,20 @@
 </script>
 
 <script>
-if (
-    window.location.pathname === "/" ||
-    window.location.pathname === "/pages" ||
-    window.location.pathname === "/pages/index"
-)
-    document.querySelector("#nav-app").classList.add("current-nav-option");
-else if (window.location.pathname === "/pages/home")
-    document.querySelector("#nav-home").classList.add("current-nav-option");
-else if (window.location.pathname === "/pages/about")
-    document.querySelector("#nav-about").classList.add("current-nav-option");
-else if (window.location.pathname === "/pages/contact")
-    document.querySelector("#nav-contact").classList.add("current-nav-option");
+    if (
+        window.location.pathname === "/" ||
+        window.location.pathname === "/pages" ||
+        window.location.pathname === "/pages/index"
+    ){
+        document.querySelector("#js-nav-app").classList.add("active-app");
+        document.querySelector("#js-nav-app").classList.remove("inactive-app");
+    }
+    else if (window.location.pathname === "/pages/home")
+        document.querySelector("#js-nav-home").classList.add("current-nav-option");
+    else if (window.location.pathname === "/pages/about")
+        document.querySelector("#js-nav-about").classList.add("current-nav-option");
+    else if (window.location.pathname === "/pages/contact")
+        document.querySelector("#js-nav-contact").classList.add("current-nav-option");
 </script>
 
 <?php if (isset($data['scripts_array'])): ?>

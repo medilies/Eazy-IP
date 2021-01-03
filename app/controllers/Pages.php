@@ -15,7 +15,7 @@ class Pages extends Controller
         $data = [
             'title' => 'APP',
             'stylesheets_array' => [],
-            'scripts_array' => ["index", "style"],
+            'scripts_array' => ["app", "app_style"],
         ];
         $this->view('pages/index', $data);
     }
