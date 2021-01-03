@@ -17,7 +17,7 @@
     flex-flow: row wrap;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: 2rem;
+    padding: 0 2rem 2rem 2rem;
 }
 
 #showcase-text {
@@ -26,7 +26,8 @@
 
 #showcase-text > h1 {
     font-family: Britanic, sans-serif;
-    margin-bottom: 0.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
 }
 
 #showcase-text > p {
@@ -48,6 +49,7 @@
 }
 
 #showcase-img {
+    margin-top: 2rem;
     max-width: 60%;
 }
 
@@ -156,10 +158,7 @@
 
 @media (max-width: 550px) {
     #rad {
-        background-image: radial-gradient(
-            var(--complementary-color11),
-            var(--complementary-color21)
-        );
+        background-image: url(/assets/img/gb2.png);
         background-size: 100% 100%;
     }
 

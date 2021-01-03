@@ -9,7 +9,7 @@
 
             <p>Let us handle the boring calculations for you</p>
 
-            <a class="inactive-app" href="/index.html">Get started</a>
+            <a class="inactive-app" href="/pages/app">Get started</a>
         </div>
 
         <div id="showcase-img">
@@ -71,7 +71,7 @@
 
         <div id="install-text">
             <p>
-                <span class="colored-text1">Usable</span> on any modern
+                <span class="colored-text1">Usable</span> from any modern
                 browser
             </p>
             <i class="fab fa-chrome fa-2x"></i>
@@ -92,11 +92,8 @@
 
     <div id="about">
         <div id="about-text">
-            <p>I am a network engineer & a full-stack web developper</p>
-            <p>
-                Get in touch with me if you are intrested in job or
-                services related talk
-            </p>
+            <p>I am a network engineer & a full stack web developer</p>
+            <p>Get in touch with me job hiring or for service request</p>
         </div>
         <div id="about-btns">
             <button class="btn">More about me</button>

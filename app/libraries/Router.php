@@ -102,6 +102,7 @@ class Router
         $open_urls = [
             "pages/index",
             "pages/home",
+            "pages/app",
             "pages/about",
             "pages/contact",
         ];
