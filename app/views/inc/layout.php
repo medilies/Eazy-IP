@@ -59,7 +59,7 @@
     <div class="max-width-container">
         <div>
             <a href="/" class="logo">Eazy IP</a>
-            <p>Copyright <i class="fal fa-copyright"></i>2020</p>
+            <p>Copyright <i class="fal fa-copyright"></i>2021</p>
         </div>
         <div>
             <a href="/">APP</a>
@@ -69,8 +69,8 @@
             <a>Support</a>
         </div>
         <div>
-            <a href=""><i class="fab fa-linkedin"></i></a>
-            <a href=""><i class="fab fa-github"></i></a>
+            <a href="https://linkedin.com/in/medilies"><i class="fab fa-linkedin fa-1x fa-2x"></i></a>
+            <a href="https://github.com/medilies"><i class="fab fa-github fa-2x"></i></a>
         </div>
     </div>
 </footer>

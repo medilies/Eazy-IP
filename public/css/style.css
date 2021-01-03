@@ -186,3 +186,39 @@ nav div.max-width-container {
         padding: 0.3rem 0.5rem;
     }
 }
+
+/* ******************************************************* */
+/* FOOTER */
+/* ******************************************************* */
+footer {
+    background: #001a36;
+    color: #fff;
+}
+
+footer > .max-width-container {
+    padding: 3rem;
+    display: flex;
+    flex-flow: row wrap;
+    align-items: center;
+    justify-content: space-evenly;
+}
+
+footer > .max-width-container > div {
+    margin-bottom: 1rem;
+}
+
+footer > .max-width-container > div:nth-child(2) > a {
+    margin: 0.3rem;
+    display: block;
+}
+
+footer i {
+    margin: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    footer > .max-width-container {
+        flex-flow: column wrap;
+        align-items: start;
+    }
+}
