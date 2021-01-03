@@ -1,5 +1,5 @@
 <?php ob_start();?>
-
+<main>
 <div class="max-width-container">
 
     <div id="options">
@@ -168,6 +168,7 @@
 
     <!-- <h1>Supernetting</h1> -->
 </div>
+</main>
 
 <?php $content = ob_get_clean();?>
 <?php require_once PROJECT_ROOT . '/app/views/inc/layout.php';?>

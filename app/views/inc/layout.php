@@ -51,28 +51,42 @@
     <?php endif;?>
 </header>
 
-<main>
-    <?=$content?>
-</main>
+
+<?=$content?>
+
 
 <footer>
     <div class="max-width-container">
-        Copyright <i class="fal fa-copyright" ></i> 2020
+        <div>
+            <a href="/" class="logo">Eazy IP</a>
+            <p>Copyright <i class="fal fa-copyright"></i>2020</p>
+        </div>
+        <div>
+            <a href="/">APP</a>
+            <a href="/pages/home">Home</a>
+            <a>About</a>
+            <a>Contact</a>
+            <a>Support</a>
+        </div>
+        <div>
+            <a href=""><i class="fab fa-linkedin"></i></a>
+            <a href=""><i class="fab fa-github"></i></a>
+        </div>
     </div>
 </footer>
 
 <!-- SCRIPTS -->
 <script>
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker
-            .register("/sw.js")
-            .then(function () {
-                console.log("Service worker registered!");
-            })
-            .catch(function (err) {
-                console.error(err);
-            });
-    }
+    // if ("serviceWorker" in navigator) {
+    //     navigator.serviceWorker
+    //         .register("/sw.js")
+    //         .then(function () {
+    //             console.log("Service worker registered!");
+    //         })
+    //         .catch(function (err) {
+    //             console.error(err);
+    //         });
+    // }
 </script>
 
 <script>

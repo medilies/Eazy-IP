@@ -14,10 +14,20 @@ class Pages extends Controller
     {
         $data = [
             'title' => 'APP',
-            'stylesheets_array' => [],
+            'stylesheets_array' => ['app'],
             'scripts_array' => ["app", "app_style"],
         ];
         $this->view('pages/index', $data);
+    }
+
+    public function home()
+    {
+        $data = [
+            'title' => 'APP',
+            'stylesheets_array' => ['home'],
+            'scripts_array' => ['home_style'],
+        ];
+        $this->view('pages/home', $data);
     }
 
     /**
