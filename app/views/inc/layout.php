@@ -36,11 +36,11 @@
             <div class="max-width-container">
 
                 <div >
-                    <?=$this->nav_element("", "logo", "", "Eazy IP", "");?>
+                    <?=$this->nav_element("", "logo", "pages/index", "Eazy IP", "");?>
                 </div>
 
                 <div id="nav-options">
-                    <?=$this->nav_element("js-nav-home", "", "", "Home", "");?>
+                    <?=$this->nav_element("js-nav-home", "", "pages/index", "Home", "");?>
                     <?=$this->nav_element("js-nav-about", "", "", "About", "");?>
                     <?=$this->nav_element("js-nav-contact", "", "", "Contact", "");?>
                     <?=$this->nav_element("js-nav-app", "inactive-app", "pages/app", "APP", "");?>
@@ -58,20 +58,20 @@
 <footer>
     <div class="max-width-container">
         <div>
-            <a href="/" class="logo">Eazy IP</a>
+            <a href="/pages/index" class="logo">Eazy IP</a>
             <p>Copyright <i class="fal fa-copyright"></i>2021</p>
         </div>
         <div>
             <a href="/pages/app">APP</a>
-            <a href="/">Home</a>
-            <a>About</a>
-            <a>Contact</a>
-            <a>Support</a>
+            <a href="/pages/index">Home</a>
+            <a href="#">About</a>
+            <a href="#">Contact</a>
+            <a href="#">Support</a>
         </div>
         <div>
-            <a href="https://linkedin.com/in/medilies"><i class="fab fa-linkedin fa-1x fa-2x"></i></a>
-            <a href="https://github.com/medilies"><i class="fab fa-github fa-2x"></i></a>
-            <a href=""><i class="fal fa-at fa-2x"></i></a>
+            <a href="https://linkedin.com/in/medilies"><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
+            <a href="https://github.com/medilies"><i class="fab fa-github fa-2x"></i>/medilies</a>
+            <a href="#"><i class="fal fa-at fa-2x"></i>.</a>
         </div>
     </div>
 </footer>
@@ -98,7 +98,7 @@
     else if (
         window.location.pathname === "/" ||
         window.location.pathname === "/pages" ||
-        window.location.pathname === "/pages/home"
+        window.location.pathname === "/pages/index"
     )
         document.querySelector("#js-nav-home").classList.add("current-nav-option");
     else if (window.location.pathname === "/pages/about")

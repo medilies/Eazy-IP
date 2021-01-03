@@ -97,10 +97,11 @@
     justify-content: center;
 }
 
-#services .max-width-container h4 {
+#services .max-width-container .mid-heading {
     font-size: 1.2rem;
-    color: var(--complementary-color11);
-    text-shadow: 2px 2px 8px #888;
+    font-weight: bold;
+    color: var(--complementary-color12);
+    text-shadow: 2px 2px 8px var(--complementary-color21);
     margin-bottom: 0.5rem;
 }
 

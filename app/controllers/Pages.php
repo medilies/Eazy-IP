@@ -13,7 +13,7 @@ class Pages extends Controller
     public function index()
     {
         $data = [
-            'title' => 'APP',
+            'title' => 'Home',
             'stylesheets_array' => ['home'],
             'scripts_array' => ['home_style'],
         ];

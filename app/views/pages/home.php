@@ -13,7 +13,7 @@
         </div>
 
         <div id="showcase-img">
-            <img src="/assets/img/demo.png" alt="" width="100%" />
+            <img src="/assets/img/demo1.png" alt="" width="100%" />
         </div>
     </div>
 
@@ -24,7 +24,7 @@
                     <i class="fal fa-tachometer-alt-fastest fa-3x"></i>
                 </div>
                 <div>
-                    <h4>Fast & Reliable</h4>
+                    <span class="mid-heading">Fast & Reliable</span>
                     <p>Flawless results from a simple input</p>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                     <i class="fal fa-money-bill-wave-alt fa-3x"></i>
                 </div>
                 <div>
-                    <h4>Free</h4>
+                    <span class="mid-heading">Free</span>
                     <p>Completely free</p>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                     <i class="fal fa-wifi-slash fa-3x"></i>
                 </div>
                 <div>
-                    <h4>Highly available</h4>
+                    <span class="mid-heading">Highly available</span>
                     <p>
                         Available for all the modern browsers, including
                         offline mode
@@ -54,7 +54,7 @@
                     <i class="fal fa-layer-plus fa-3x"></i>
                 </div>
                 <div>
-                    <h4>Easy install</h4>
+                    <span class="mid-heading">Easy install</span>
                     <p>
                         1 click in your browser installs the application
                         on any OS
@@ -66,7 +66,7 @@
 
     <div id="install" class="max-width-container">
         <div id="install-img">
-            <img src="/assets/img/install0.png" alt="" width="100%" />
+            <img src="/assets/img/install1.png" alt="" width="100%" />
         </div>
 
         <div id="install-text">

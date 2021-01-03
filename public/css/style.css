@@ -76,8 +76,8 @@ table {
 }
 
 .colored-text1 {
-    color: var(--complementary-color21);
-    text-shadow: 1px 1px 2px #000;
+    color: var(--primary-color);
+    text-shadow: 2px 1px 1px var(--complementary-color21);
     font-weight: bold;
 }
 
@@ -207,7 +207,8 @@ footer > .max-width-container > div {
     margin-bottom: 1rem;
 }
 
-footer > .max-width-container > div:nth-child(2) > a {
+footer > .max-width-container > div:nth-child(2) > a,
+footer > .max-width-container > div:nth-child(3) > a {
     margin: 0.3rem;
     display: block;
 }
