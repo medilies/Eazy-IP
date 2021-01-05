@@ -24,7 +24,7 @@
                     <i class="fal fa-tachometer-alt-fastest fa-3x"></i>
                 </div>
                 <div>
-                    <span class="mid-heading">Fast & Reliable</span>
+                    <span class="heading1">Fast & Reliable</span>
                     <p>Flawless results from a simple input</p>
                 </div>
             </div>
@@ -33,7 +33,7 @@
                     <i class="fal fa-money-bill-wave-alt fa-3x"></i>
                 </div>
                 <div>
-                    <span class="mid-heading">Free</span>
+                    <span class="heading1">Free</span>
                     <p>Completely free</p>
                 </div>
             </div>
@@ -42,7 +42,7 @@
                     <i class="fal fa-wifi-slash fa-3x"></i>
                 </div>
                 <div>
-                    <span class="mid-heading">Highly available</span>
+                    <span class="heading1">Highly available</span>
                     <p>
                         Available for all the modern browsers, including
                         offline mode
@@ -54,7 +54,7 @@
                     <i class="fal fa-layer-plus fa-3x"></i>
                 </div>
                 <div>
-                    <span class="mid-heading">Easy install</span>
+                    <span class="heading1">Easy install</span>
                     <p>
                         1 click in your browser installs the application
                         on any OS
@@ -93,12 +93,12 @@
     <div id="about">
         <div id="about-text">
             <p>I am a network engineer & a full stack web developer</p>
-            <p>Get in touch with me job hiring or for service request</p>
+            <p>Get in touch with me for job hiring or for service request</p>
         </div>
         <div id="about-btns">
-            <button class="btn">More about me</button>
-            <button class="btn">Contact</button>
-            <button class="btn">Support the project</button>
+            <a href="/pages/about" class="btn link-btn1">More about me</a>
+            <a href="/pages/contact" class="btn link-btn1">Contact</a>
+            <a href="#" class="btn link-btn1">Support the project</a>
         </div>
     </div>
 

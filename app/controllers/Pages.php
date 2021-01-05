@@ -31,6 +31,27 @@ class Pages extends Controller
 
     }
 
+    public function about()
+    {
+        $data = [
+            'title' => 'About',
+            'stylesheets_array' => [],
+            'scripts_array' => [],
+        ];
+        $this->view('pages/about', $data);
+
+    }
+
+    public function contact()
+    {
+        $data = [
+            'title' => 'Contact',
+            'stylesheets_array' => [],
+            'scripts_array' => [],
+        ];
+        $this->view('pages/contact', $data);
+    }
+
     /**
      * Return Anchor element to be echoed in nav bar
      */

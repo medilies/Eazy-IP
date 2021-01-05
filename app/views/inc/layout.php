@@ -16,7 +16,7 @@
         <?php endforeach;?>
     <?php endif;?>
     <link rel="stylesheet" href="/css/fontawesome_free_5.13.0_we_all.min.css">
-    <link rel="icon" href="favicon.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
 
     <title><?=$GLOBALS['APP_NAME'] . ' | ' . $data['title']?></title>
 
@@ -41,8 +41,8 @@
 
                 <div id="nav-options">
                     <?=$this->nav_element("js-nav-home", "", "pages/index", "Home", "");?>
-                    <?=$this->nav_element("js-nav-about", "", "", "About", "");?>
-                    <?=$this->nav_element("js-nav-contact", "", "", "Contact", "");?>
+                    <?=$this->nav_element("js-nav-about", "", "pages/about", "About", "");?>
+                    <?=$this->nav_element("js-nav-contact", "", "pages/contact", "Contact", "");?>
                     <?=$this->nav_element("js-nav-app", "inactive-app", "pages/app", "APP", "");?>
                 </div>
 
@@ -64,9 +64,9 @@
         <div>
             <a href="/pages/app">APP</a>
             <a href="/pages/index">Home</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
-            <a href="#">Support</a>
+            <a href="/pages/about">About</a>
+            <a href="/pages/contact">Contact</a>
+            <a href="#">Offer support</a>
         </div>
         <div>
             <a href="https://linkedin.com/in/medilies"><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
