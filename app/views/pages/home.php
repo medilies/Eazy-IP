@@ -13,7 +13,7 @@
         </div>
 
         <div id="showcase-img">
-            <img src="/assets/img/demo1.png" alt="" width="100%" />
+            <img src="/assets/img/Demo1.png" alt="" width="100%" />
         </div>
     </div>
 
