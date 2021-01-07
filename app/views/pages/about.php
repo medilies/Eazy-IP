@@ -7,7 +7,7 @@
         <img src="/public/assets/img/Artboard.png" alt="" width="169px">
         <div class="pad1xy">
             <span class="heading1">Hi! I'm Mohamed Ilies, a network engineer & a full stack web developer</span>
-            <p>I am a freshly graduated network engineer <span class="note-text">(I hope that I'm having a greater title by the time you're reading this &#129299;)</span> and while waiting for my diplomat I decided to make this project.</p>
+            <p>I am a freshly graduated network engineer <span class="note-text">(I hope that I'm having a greater title by the time you're reading this &#129299;)</span> and while waiting for my diploma I decided to make this project.</p>
         </div>
     </dev>
     <div id="about-cors" class="pad1xy">

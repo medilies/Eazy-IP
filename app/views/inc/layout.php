@@ -16,6 +16,8 @@
         <?php endforeach;?>
     <?php endif;?>
     <link rel="stylesheet" href="/css/fontawesome_free_5.13.0_we_all.min.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Goldman&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
 
     <title><?=$GLOBALS['APP_NAME'] . ' | ' . $data['title']?></title>

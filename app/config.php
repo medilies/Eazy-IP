@@ -1,8 +1,8 @@
 <?php
 // E_ERROR | E_WARNING | E_PARSE | E_NOTICE | E_DEPRECATED ...
-// error_reporting(0);
+error_reporting(0);
 // error_reporting(E_ALL & ~E_NOTICE); // default in php.ini
-error_reporting(E_ALL);
+// error_reporting(E_ALL);
 
 session_start();
 

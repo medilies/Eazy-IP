@@ -35,7 +35,7 @@ html {
     padding: 0;
     margin: 0;
     box-sizing: border-box;
-    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    font-family: "Nunito", sans-serif;
 }
 
 main {
@@ -192,7 +192,7 @@ nav div.max-width-container {
 }
 
 .logo {
-    font-family: "Freestyle script", sans-serif;
+    font-family: "Caveat", cursive;
     font-weight: bolder;
     cursor: pointer;
     font-size: 2rem;

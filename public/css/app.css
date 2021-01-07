@@ -25,6 +25,12 @@ main {
     margin: 1rem 0;
 }
 
+.report-href,
+a.report-href {
+    font-weight: 550;
+    text-decoration: underline;
+}
+
 .js-add-subnet,
 .js-remove-subnet {
     cursor: pointer;

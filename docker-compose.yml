@@ -2,8 +2,8 @@ version: "3.8"
 
 services:
     web:
-        image: darlink-web
-        # build: ./web
+        image: eazyip-web
+        build: .
         ports:
             - 80:80
         volumes:
