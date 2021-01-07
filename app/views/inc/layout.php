@@ -77,6 +77,8 @@
 </footer>
 
 <!-- SCRIPTS -->
+<script data-ad-client="ca-pub-9350489272916133" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+
 <script>
     // if ("serviceWorker" in navigator) {
     //     navigator.serviceWorker
