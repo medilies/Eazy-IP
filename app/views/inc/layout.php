@@ -68,9 +68,9 @@
             <a href="#">Offer support</a>
         </div>
         <div>
-            <a href="https://linkedin.com/in/medilies" target='_Blank'><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
-            <a href="https://github.com/medilies" target='_Blank'><i class="fab fa-github fa-2x"></i>/medilies</a>
-            <a href="mailto:medilies.contact@gmail.com" target='_Blank'><i class="fal fa-at fa-2x"></i>medilies.contact@gmail.com</a>
+            <a href="https://linkedin.com/in/medilies" ><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
+            <a href="https://github.com/medilies" ><i class="fab fa-github fa-2x"></i>/medilies</a>
+            <a href="mailto:medilies.contact@gmail.com" ><i class="fal fa-at fa-2x"></i>medilies.contact@gmail.com</a>
         </div>
     </div>
 </footer>
@@ -107,6 +107,14 @@
     else if (window.location.pathname === "/pages/contact")
         document.querySelector("#js-nav-contact").classList.add("current-nav-option");
 </script>
+
+<!-- <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
+<script>
+  function addDarkmodeWidget() {
+    new Darkmode().showWidget();
+  }
+  window.addEventListener('load', addDarkmodeWidget);
+</script> -->
 
 <?php if (isset($data['scripts_array'])): ?>
     <?php foreach ($data['scripts_array'] as $script_name): ?>
