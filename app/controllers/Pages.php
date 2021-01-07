@@ -7,8 +7,7 @@ class Pages extends Controller
 {
     public function __construct()
     {
-
-        if (isset($_SESSION['recorded_visit']) && $_SESSION['recorded_visit'] != true) {
+        if (!isset($_SESSION['recorded_visit']) || isset($_SESSION['recorded_visit']) && $_SESSION['recorded_visit'] != true) {
 
             $db = parse_url(getenv("DATABASE_URL"));
 
