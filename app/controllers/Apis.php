@@ -4,12 +4,11 @@ class Apis extends Controller
 {
     public function __construct()
     {
-        // $this->ApiModel = $this->model('Api');
+        $this->ApiModel = $this->model('Api');
     }
 
     public function contact()
     {
-        // var_dump($_POST);
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
@@ -36,9 +35,15 @@ class Apis extends Controller
 
             $data['email'] = strtolower($data['email']);
 
-            if (strlen($data['name']) < 101 && strlen($data['email']) < 101 && strlen($data['msg']) < 1001) {
-                // insert
+            if (
+                strlen($data['name']) < 101 &&
+                strlen($data['email']) < 101 &&
+                strlen($data['msg']) < 1001
+            ) {
+
+                $this->ApiModel->insert_contact_msg($data['name'], $data['email'], $data['msg']);
                 echo "nice msg";
+
             } else {
                 echo 'ownonono';
             }

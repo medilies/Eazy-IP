@@ -33,24 +33,21 @@
 <body>
 
 <header>
-    <?php if (!isset($_SESSION['id']) || empty($_SESSION['id'])): ?>
-        <nav>
-            <div class="max-width-container">
 
-                <div >
-                    <?=$this->nav_element("", "logo", "pages/index", "Eazy IP", "");?>
-                </div>
-
-                <div id="nav-options">
-                    <?=$this->nav_element("js-nav-home", "", "pages/index", "Home", "");?>
-                    <?=$this->nav_element("js-nav-about", "", "pages/about", "About", "");?>
-                    <?=$this->nav_element("js-nav-contact", "", "pages/contact", "Contact", "");?>
-                    <?=$this->nav_element("js-nav-app", "inactive-app", "pages/app", "APP", "");?>
-                </div>
-
+    <nav>
+        <div class="max-width-container">
+            <div >
+                <?=$this->nav_element("", "logo", "pages/index", "Eazy IP", "");?>
             </div>
-        </nav>
-    <?php endif;?>
+            <div id="nav-options">
+                <?=$this->nav_element("js-nav-home", "", "pages/index", "Home", "");?>
+                <?=$this->nav_element("js-nav-about", "", "pages/about", "About", "");?>
+                <?=$this->nav_element("js-nav-contact", "", "pages/contact", "Contact", "");?>
+                <?=$this->nav_element("js-nav-app", "inactive-app", "pages/app", "APP", "");?>
+            </div>
+        </div>
+    </nav>
+
 </header>
 
 
@@ -71,9 +68,9 @@
             <a href="#">Offer support</a>
         </div>
         <div>
-            <a href="https://linkedin.com/in/medilies"><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
-            <a href="https://github.com/medilies"><i class="fab fa-github fa-2x"></i>/medilies</a>
-            <a href="#"><i class="fal fa-at fa-2x"></i>.</a>
+            <a href="https://linkedin.com/in/medilies" target='_Blank'><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
+            <a href="https://github.com/medilies" target='_Blank'><i class="fab fa-github fa-2x"></i>/medilies</a>
+            <a href="mailto:medilies.contact@gmail.com" target='_Blank'><i class="fal fa-at fa-2x"></i>medilies.contact@gmail.com</a>
         </div>
     </div>
 </footer>

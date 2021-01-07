@@ -7,31 +7,8 @@ class Pages extends Controller
 {
     public function __construct()
     {
-        if (!isset($_SESSION['recorded_visit']) || isset($_SESSION['recorded_visit']) && $_SESSION['recorded_visit'] != true) {
-
-            $db = parse_url(getenv("DATABASE_URL"));
-
-            $cnx = new PDO("pgsql:" . sprintf(
-                "host=%s;port=%s;user=%s;password=%s;dbname=%s",
-                $db["host"],
-                $db["port"],
-                $db["user"],
-                $db["pass"],
-                ltrim($db["path"], "/")
-            ));
-
-            $cnx->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $cnx->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-
-            $query = "INSERT INTO visitors (address) VALUES ('" . $_SERVER['REMOTE_ADDR'] . "')";
-
-            $visit = $cnx->prepare($query);
-
-            $visit->execute();
-
-            $_SESSION['recorded_visit'] = true;
-        }
-
+        $this->PageModel = $this->model('Page');
+        $this->PageModel->record_visit();
     }
 
     public function index()
