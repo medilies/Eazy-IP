@@ -78,43 +78,9 @@
 <!-- SCRIPTS -->
 <script data-ad-client="ca-pub-9350489272916133" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 
-<script>
-    // if ("serviceWorker" in navigator) {
-    //     navigator.serviceWorker
-    //         .register("/sw.js")
-    //         .then(function () {
-    //             console.log("Service worker registered!");
-    //         })
-    //         .catch(function (err) {
-    //             console.error(err);
-    //         });
-    // }
-</script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script> -->
 
-<script>
-    if (window.location.pathname === "/pages/app"){
-        document.querySelector("#js-nav-app").classList.add("active-app");
-        document.querySelector("#js-nav-app").classList.remove("inactive-app");
-    }
-    else if (
-        window.location.pathname === "/" ||
-        window.location.pathname === "/pages" ||
-        window.location.pathname === "/pages/index"
-    )
-        document.querySelector("#js-nav-home").classList.add("current-nav-option");
-    else if (window.location.pathname === "/pages/about")
-        document.querySelector("#js-nav-about").classList.add("current-nav-option");
-    else if (window.location.pathname === "/pages/contact")
-        document.querySelector("#js-nav-contact").classList.add("current-nav-option");
-</script>
-
-<!-- <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script>
-<script>
-  function addDarkmodeWidget() {
-    new Darkmode().showWidget();
-  }
-  window.addEventListener('load', addDarkmodeWidget);
-</script> -->
+<script src="/js/index.js"></script>
 
 <?php if (isset($data['scripts_array'])): ?>
     <?php foreach ($data['scripts_array'] as $script_name): ?>

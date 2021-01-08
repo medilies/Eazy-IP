@@ -22,4 +22,22 @@ class Api extends Database
             echo "Error!: " . $e->getMessage() . "<br/>";
         }
     }
+
+    public function record_visit()
+    {
+
+        try {
+
+            $query = "INSERT INTO visitors (addr) VALUES ('" . $_SERVER['REMOTE_ADDR'] . "')";
+
+            $visit = $this->cnx->prepare($query);
+
+            $visit->execute();
+
+            $_SESSION['recorded_visit'] = true;
+
+        } catch (PDOException $e) {
+            echo "Error!: " . $e->getMessage() . "<br/>";
+        }
+    }
 }

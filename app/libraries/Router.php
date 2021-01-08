@@ -106,6 +106,7 @@ class Router
             "pages/about",
             "pages/contact",
             "apis/contact",
+            "apis/visit",
         ];
 
         $login_required_urls = [

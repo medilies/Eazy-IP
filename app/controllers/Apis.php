@@ -51,4 +51,27 @@ class Apis extends Controller
         }
     }
 
+    public function visit()
+    {
+        if (
+            !isset($_SESSION['recorded_visit']) ||
+            isset($_SESSION['recorded_visit']) && $_SESSION['recorded_visit'] != true
+        ) {
+
+            $this->ApiModel->record_visit();
+
+            if ($_SESSION['recorded_visit'] == true) {
+                echo 'recorded';
+            } else {
+                echo 'api issue';
+            }
+
+        } else if ($_SESSION['recorded_visit'] && $_SESSION['recorded_visit'] == true) {
+            echo 'recorded';
+        } else {
+            echo 'unexpected api behaviour';
+        }
+
+    }
+
 }

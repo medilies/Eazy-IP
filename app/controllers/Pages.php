@@ -7,9 +7,7 @@ class Pages extends Controller
 {
     public function __construct()
     {
-        // NO DB FOR OLD MEN
-        // $this->PageModel = $this->model('Page');
-        // $this->PageModel->record_visit();
+        // NO DB FOR POOR MEN
     }
 
     public function index()
