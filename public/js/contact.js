@@ -1,4 +1,5 @@
 const contactForm = document.querySelector("#contact-form");
+const contactMsgStatus = document.querySelector("#contact-msg-status");
 
 contactForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -16,6 +17,13 @@ contactForm.addEventListener("submit", (e) => {
     })
         .then((res) => res.text())
         .then((text) => {
-            console.log(text);
+            if (text === "nice msg") {
+                contactMsgStatus.innerHTML =
+                    "<p class='success-text'>We recieved your message. Thank you :)</p>";
+            } else if (text === "ownonono") {
+                contactMsgStatus.innerHTML =
+                    "<p class='alarming-text'>A server error happened! please try another medium to pass your massege (An email maybe)</p>";
+                //
+            }
         });
 });

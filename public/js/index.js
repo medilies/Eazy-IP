@@ -53,11 +53,10 @@ if (sessionStorage.getItem("visit") !== "recorded") {
                 throw "server err";
             }
         })
-        .then((content) => {
-            // console.log(content);
+        .then((text) => {
+            // console.log(text);
 
-            if (content === "recorded")
-                sessionStorage.setItem("visit", content);
+            if (text === "recorded") sessionStorage.setItem("visit", text);
             else throw "backend err";
         })
         .catch((err) => {
