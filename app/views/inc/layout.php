@@ -68,9 +68,9 @@
             <a href="#">Offer support</a>
         </div>
         <div>
-            <a href="https://linkedin.com/in/medilies" ><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
-            <a href="https://github.com/medilies" ><i class="fab fa-github fa-2x"></i>/medilies</a>
-            <a href="#" ><i class="fal fa-at fa-2x"></i>medilies.contact@gmail.com</a>
+            <a href="https://linkedin.com/in/medilies" target='_Blank'><i class="fab fa-linkedin fa-1x fa-2x"></i>/medilies</a>
+            <a href="https://github.com/medilies" target='_Blank'><i class="fab fa-github fa-2x"></i>/medilies</a>
+            <a href="mailto:medilies.contact@gmail.com" target='_Blank'><i class="fal fa-at fa-2x"></i>medilies.contact@gmail.com</a>
         </div>
     </div>
 </footer>
