@@ -240,10 +240,12 @@ nav div.max-width-container {
 
 #nav-options > .inactive-app {
     padding: 0.3rem 1.2rem;
+    margin-left: 0.8rem;
+    margin-right: 0.8rem;
     border-radius: 30px;
     background-color: var(--primary-color4);
     background-image: var(--incative-app-gradient);
-    box-shadow: var(-);
+    box-shadow: var(--inactive-app-shadow);
     color: var(--complementary-color11);
 }
 

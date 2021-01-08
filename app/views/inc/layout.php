@@ -29,6 +29,7 @@
         sizes="144x144"
     />
     <meta name="theme-color" content="#1167b1" />
+    <script data-ad-client="ca-pub-9350489272916133" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 </head>
 <body>
 
@@ -76,7 +77,6 @@
 </footer>
 
 <!-- SCRIPTS -->
-<script data-ad-client="ca-pub-9350489272916133" async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
 
 <!-- <script src="https://cdn.jsdelivr.net/npm/darkmode-js@1.5.7/lib/darkmode-js.min.js"></script> -->
 

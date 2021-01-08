@@ -14,7 +14,6 @@ contactForm.addEventListener("submit", (e) => {
     // const email = formData.get("email");
     // const msg = formData.get("msg");
 
-    // disable sending for a while
     fetch(`${window.location.origin}/apis/contact`, {
         method: "post",
         body: formData,
