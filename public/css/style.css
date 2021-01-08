@@ -117,25 +117,28 @@ table {
 .alarming-text {
     padding: 0.2rem;
     margin: 0.4rem auto;
-    border: solid 2px#f00;
     border-radius: 5px;
+    border: solid 2px#f00;
     background-color: rgb(255, 172, 172);
+    color: #000;
 }
 
 .notice-text {
     padding: 0.2rem;
     margin: 0.4rem auto;
-    border: solid 2px#00f;
     border-radius: 5px;
+    border: solid 2px#00f;
     background-color: rgb(172, 172, 253);
+    color: #000;
 }
 
 .success-text {
     padding: 0.2rem;
     margin: 0.4rem auto;
-    border: solid 2px #00ff00;
     border-radius: 5px;
+    border: solid 2px #00ff00;
     background-color: rgb(172, 253, 172);
+    color: #000;
 }
 
 .note-text {
@@ -167,6 +170,16 @@ table {
 .link-btn1:hover {
     background-color: var(--complementary-color11);
     opacity: 0.7;
+}
+
+.disabled-btn {
+    cursor: no-drop;
+    color: #333;
+    background-color: #ccc;
+}
+.disabled-btn:hover {
+    color: #333;
+    background-color: #ccc;
 }
 
 .heading1 {

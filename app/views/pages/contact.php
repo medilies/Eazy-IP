@@ -7,8 +7,8 @@
             <input type="text" name="name" id="name" class="block centered-block" placeholder="Your name" required>
             <input type="email" name="email" id="email" class="block centered-block" placeholder="Your Email" required>
             <textarea name="msg" id="msg" cols="50" rows="15" maxlength="1000" placeholder="Message" required></textarea>
-            <div id="contact-msg-status"></div>
-            <button type="submit" name="contact_msg" class="btn">Send</button>
+            <div id="js-contact-msg-status"></div>
+            <button type="submit" name="contact_msg" id="js-contact-submit-btn" class="btn">Send</button>
         </form>
     </div>
 

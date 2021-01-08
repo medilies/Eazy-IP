@@ -1,8 +1,12 @@
 const contactForm = document.querySelector("#contact-form");
-const contactMsgStatus = document.querySelector("#contact-msg-status");
+const contactMsgStatus = document.querySelector("#js-contact-msg-status");
+const contactSubmitBtn = document.querySelector("#js-contact-submit-btn");
 
 contactForm.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (contactSubmitBtn.classList.contains("disabled-btn")) return;
+
+    contactSubmitBtn.classList.add("disabled-btn");
 
     const formData = new FormData(contactForm);
 
@@ -20,10 +24,13 @@ contactForm.addEventListener("submit", (e) => {
             if (text === "nice msg") {
                 contactMsgStatus.innerHTML =
                     "<p class='success-text'>We recieved your message. Thank you :)</p>";
-            } else if (text === "ownonono") {
-                contactMsgStatus.innerHTML =
-                    "<p class='alarming-text'>A server error happened! please try another medium to pass your massege (An email maybe)</p>";
-                //
+                contactSubmitBtn.classList.remove("disabled-btn");
+            } else if (text !== "nice msg") {
+                throw "backend err";
             }
+        })
+        .catch(() => {
+            contactMsgStatus.innerHTML =
+                "<p class='alarming-text'>A server error happened! please try another medium to pass your massege (An email maybe)</p>";
         });
 });
