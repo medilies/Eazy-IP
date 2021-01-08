@@ -7,8 +7,8 @@ class Pages extends Controller
 {
     public function __construct()
     {
-        $this->PageModel = $this->model('Page');
-        $this->PageModel->record_visit();
+        // $this->PageModel = $this->model('Page');
+        // $this->PageModel->record_visit();
     }
 
     public function index()
