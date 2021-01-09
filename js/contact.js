@@ -2,6 +2,9 @@ const contactForm = document.querySelector("#contact-form");
 const contactMsgStatus = document.querySelector("#js-contact-msg-status");
 const contactSubmitBtn = document.querySelector("#js-contact-submit-btn");
 
+// DISABLING IT
+contactSubmitBtn.classList.add("disabled-btn");
+
 contactForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (contactSubmitBtn.classList.contains("disabled-btn")) return;

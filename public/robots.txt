@@ -1,9 +1,0 @@
-User-agent: *
-Disallow: /*.png
-Disallow: /*.jpg
-Disallow: /*.png
-Disallow: /*.ttf
-Disallow: /*.woff
-Disallow: /*.woff2
-Disallow: /*.svg
-Allow: /pages/
